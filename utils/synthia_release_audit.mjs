@@ -79,6 +79,19 @@ for (const relative of requiredFiles) {
 	}
 }
 
+// The native editor plugins are source, not generated Cordova caches.
+// Verify every local dependency before calling a checkpoint buildable.
+const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+for (const section of ["dependencies", "devDependencies"]) {
+	for (const [name, spec] of Object.entries(packageJson[section] || {})) {
+		if (!spec.startsWith("file:")) continue;
+		const source = path.join(root, spec.slice(5));
+		if (!fs.existsSync(path.join(source, "package.json"))) {
+			failures.push(`missing local dependency source: ${name} (${spec})`);
+		}
+	}
+}
+
 const config = fs.readFileSync(path.join(root, "config.xml"), "utf8");
 if (!/\bid="world\.synthia\.acode"/.test(config)) {
 	failures.push("config.xml package id is not world.synthia.acode");
