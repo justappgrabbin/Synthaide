@@ -1,0 +1,18 @@
+# Installed dependencies and Cordova-generated files
+node_modules/
+platforms/
+plugins/
+www/build/
+www/js/build/
+www/css/build/
+# Local credentials, signing keys, and output artifacts
+.env
+.env.*
+!.env.example
+build.json
+*.keystore
+*.jks
+*.apk
+*.aab
+*.log
+.DS_Store

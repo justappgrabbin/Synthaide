@@ -1,0 +1,753 @@
+
+> world.synthia.acode@1.0.0 test:synthia-complete
+> node --test tests/*.node.mjs && npm run test:synthia-release-audit
+
+✔ Acode hosts bind as four separate action tools (12.026787ms)
+✔ hands execute only after the existing autonomy permission agrees (1.438286ms)
+✔ artifact retrieval refuses requests without a complete digest (0.403058ms)
+✔ canonical address selects a five-substrate calculation before transition execution (44.471434ms)
+✔ biorhythm cycles are deterministic and explicitly non-predictive (2.836824ms)
+✔ chemistry engine resolves verified mixtures and preserves unknowns (0.299955ms)
+✔ codon OU experiment is reproducible with injected randomness (0.363875ms)
+✔ Human Design bridge keeps calculation facts separate from provider (0.278485ms)
+✔ restricted sources cannot masquerade as incorporated engines (0.227642ms)
+(node:2725) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/review/living-organism/src/synthia/semantic-mesh/engine/synthia.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /workspace/review/living-organism/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ best-of merge is additive (1.192809ms)
+✔ only active action tools consume the 26 body slots (12.018077ms)
+✔ a capable sovereign tool can decline without executing (0.440331ms)
+✔ hands do not imply that the browser host is available (0.50859ms)
+✔ an available host still needs per-task permission (0.406818ms)
+✔ DEG learner extracts reusable production rules from a tiny generic dataset (11.056518ms)
+✔ DEG production rules can generate a new graph without Geo-DEG (1.535695ms)
+✔ DEG Automaton can live by itself on its own mesh (0.794024ms)
+✔ Geo-DEG geometry can live by itself and consume a grammar data contract (4.330076ms)
+✔ Geo-DEG exposes similarity neighborhoods, routes, composition, and diffusion (1.735845ms)
+✔ shared roof connects DEG output to Geo-DEG without merging their state (2.426929ms)
+✔ DEG and Geo-DEG advertise separate independent ATO manifests (0.542718ms)
+✔ Settings exposes the grammar systems without turning them into Morph (1.678421ms)
+✔ Gate -> Line -> Color -> Tone -> Base feeds existing Klein calculations into five-substrate transition math (80.36953ms)
+(node:2759) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/review/living-organism/src/synthia/semantic-mesh/engine/synthia.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /workspace/review/living-organism/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ living mesh activates all five distinct graph projections and the canonical tool population (13.038161ms)
+✔ cue processing records semantic triples, all five phase stages, and canonical-address bridging (17.605125ms)
+✔ public anticipatory memory never exposes private coordinates or raw content (6.246199ms)
+✔ independent current nodes join by proxy without transferring owned state into the shared snapshot (7.816717ms)
+✔ actual repeated information crossings promote an emergent channel (6.451274ms)
+✔ semantic growth delegates to the active Integrated Tool Factory instead of the preserved Kimi factory (16.616737ms)
+✔ the experiment stack is represented as one mesh node rather than owning the semantic mesh (353.642803ms)
+✔ organism cognition is bounded independently from render frames (1.12646ms)
+✔ pending approval is a hard decision stop and cannot be overwritten (7.957176ms)
+✔ duplicate action proposals do not multiply the queue (0.264295ms)
+✔ approval activates exactly one action and consumes energy once (1.261378ms)
+✔ episodic memory is bounded and retains structured gate evidence (1.019646ms)
+✔ Morph Chat remains usable when optional DEG and Geo-DEG tools are absent (26.279768ms)
+✔ Morph Chat can discover and call DEG alone through an external tool mesh (13.220644ms)
+✔ Morph Chat can discover Geo-DEG alone without taking ownership of its geometry (11.834404ms)
+✔ Morph Chat can chain DEG output into Geo-DEG by message data without merging state (12.448208ms)
+✔ Morph runtime has no direct implementation import of DEG or Geo-DEG (0.587966ms)
+✔ Residence composition root attaches grammar tools without importing them into Morph (0.34605ms)
+✔ v0.6 substrate preserves originals and diagnoses the same intake (18.075546ms)
+✔ duplicate intake records a sighting without replacing the original (3.602513ms)
+✔ MCP gateway edits a workboard copy, never the immutable original (2.977331ms)
+✔ Morph Chat is an independent ATO and keeps Klein tools independent (20.911575ms)
+✔ normal conversation fires a VQ trace and returns non-echo language (17.139502ms)
+✔ perspective is proportional and plural rather than one fixed view (17.316666ms)
+✔ coding conversation produces executable-oriented code and grammar analysis (11.064392ms)
+✔ multi-turn session memory is carried into later responses (11.900022ms)
+✔ final wording provider is replaceable without replacing Morph cognition (9.642516ms)
+✔ provider failure falls back to the local Morph realization (10.231527ms)
+✔ Residence UI exposes separate Morph and Morph Chat routes with cached panels (0.323096ms)
+✔ user-supplied visual Morph Engine remains standalone behind the shell bridge (0.405059ms)
+✔ integrated factory generates, mounts, and runs a native ATO tool (5.221125ms)
+✔ Synthia synthesis runtime exposes the end-to-end MVP path (1.557526ms)
+✔ all eight structural synthesis levels are executable (7.280434ms)
+✔ semantic completion preserves supplied coordinate fields (2.076649ms)
+✔ meaning-first sentence realization remains available as an output layer (0.397634ms)
+(node:2813) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/review/living-organism/src/synthia/semantic-mesh/engine/synthia.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /workspace/review/living-organism/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ native grammar exposes exactly 64 primitive slots without inventing unresolved complements (1.642092ms)
+✔ primitive teaching extends the finite basis without changing its 64-slot size (1.031046ms)
+✔ P/D/G/L/C/T/B jobs remain invariant across Human Design and code domain labels (2.069667ms)
+✔ relationship grammar classifies resonance, harmony, and dissonance and rejects scale teleporting (0.477138ms)
+✔ scale engine provides the same FOLD/UNFOLD/UP/DOWN/CROSS/PIVOT operators independent of domain (0.342236ms)
+✔ reality correction preserves unresolved as distinct from contradicted and remembers observation (1.205577ms)
+✔ one native control loop handles Human Design, language, and code domains (0.782879ms)
+✔ live Synthia mesh invokes the addressed native grammar and existing AutoLing boundary (17.470964ms)
+✔ native grammar and its internal organs are addressed, identified, and live on the integration graph (0.217584ms)
+(node:2820) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/review/living-organism/src/synthia/semantic-mesh/engine/synthia.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /workspace/review/living-organism/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ browser Human Design GNN reproduces the trained PyTorch checkpoint fixture (15.720761ms)
+✔ trained Human Design GNN remains an independent callable node (6.802559ms)
+✔ perspective connection field keeps one 64-node state with 36 links per node across five projections (12.118254ms)
+✔ generative process preserves its donor hierarchy while using the verified 36-edge HD graph as the active adapter (3.558871ms)
+✔ all 36 architecture-generator families execute and its neural layer modulates rather than owns capabilities (4.268136ms)
+✔ architecture generator is a sovereign mesh capability, not a capability registry replacement (1.107316ms)
+✔ current Synthia runtime mounts neural functions as independent living-mesh nodes and cue events actually reach the connection field (43.36524ms)
+✔ verified runtime outcomes feed channel emergence state without exposing another node's internal state (17.075784ms)
+✔ Micro-State-Space template keeps explicit legal transitions and PUCT memory (4.565422ms)
+✔ Composition predictor learns from executed quality/cost outcomes (2.34554ms)
+✔ exploration controller has distinct exploit, uncertainty, novelty, and value-free modes (0.346316ms)
+✔ task assignment keeps workers separate, detects resource collisions, and releases stalls (1.023395ms)
+✔ Autolab-style experiment abstraction exposes Variable, Action, Module, and Recipe without Python runtime (1.517546ms)
+✔ Generative Experiment Orchestrator executes DEG → Geo-DEG → predictor → PUCT → assignment → execution → learning (32.620767ms)
+✔ orchestrator is an ATO but DEG and Geo-DEG remain external independent automatons (12.678055ms)
+✔ orchestrator source has no direct implementation imports of DEG or Geo-DEG (0.701042ms)
+✔ legacy front-door logic is replaced rather than hidden (0.624336ms)
+✔ canonical state projection derives from the ATO StateSpaceKernel, not a second text hash (10.402883ms)
+(node:2834) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/review/living-organism/src/synthia/semantic-mesh/engine/synthia.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /workspace/review/living-organism/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "problem": "Create an executable tool that inspects gate-address relationships.",
+  "address": {
+    "planetary": "Uranus",
+    "dimension": "Movement",
+    "gate": 11,
+    "line": 1,
+    "color": 1,
+    "tone": 1,
+    "base": 1,
+    "degree": 23,
+    "minute": 52,
+    "second": 0,
+    "arcAxis": "Desc",
+    "zodiac": "Aquarius",
+    "house": 11
+  },
+  "calculation": {
+    "primarySubstrate": "Movement",
+    "klein": {
+      "source": {
+        "gate": {
+          "number": 11,
+          "bits": "001010",
+          "index": 10
+        },
+        "line": {
+          "number": 1,
+          "bit": 0,
+          "bitIndexTopDown": 5
+        },
+        "color": 1,
+        "tone": 1,
+        "base": 1,
+        "kleinHouse": {
+          "house": 4,
+          "row": 3,
+          "bits": "001010",
+          "houseId": "arousing",
+          "houseName": "House of The Arousing"
+        }
+      },
+      "transition": {
+        "gateChangingLines": [
+          2,
+          4
+        ],
+        "gateDistance": 2,
+        "gateOperator": "110101",
+        "kleinHouseOperator": "110110",
+        "kleinHouseTransformValid": true,
+        "vectorOperator": [
+          1,
+          1,
+          0,
+          1,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    "fiveSubstrates": {
+      "movement": {
+        "substrate": "Movement",
+        "operator": "apply-addressed-transition",
+        "changed": true,
+        "xPrime": [
+          "addressed",
+          "capability-required",
+          "executable"
+        ],
+        "trace": [
+          "apply-addressed-transition"
+        ]
+      },
+      "evolution": {
+        "substrate": "Evolution",
+        "sequence": [],
+        "inheritance": {
+          "priorEventId": null,
+          "sequenceDepth": 0,
+          "actionType": "apply-addressed-transition"
+        },
+        "historyDepth": 0
+      },
+      "being": {
+        "substrate": "Being",
+        "contextFixed": true,
+        "meaning": {
+          "state": [
+            "addressed",
+            "capability-required"
+          ],
+          "position": {
+            "planetary": "Uranus",
+            "dimension": "Movement",
+            "gate": 11,
+            "line": 1,
+            "color": 1,
+            "tone": 1,
+            "base": 1,
+            "degree": 23,
+            "minute": 52,
+            "second": 0,
+            "arcAxis": "Desc",
+            "zodiac": "Aquarius",
+            "house": 11
+          },
+          "desired": [
+            "executable"
+          ],
+          "componentId": "synthia-tool-synthesis-worker",
+          "klein": {
+            "address": {
+              "mode": "macro",
+              "gate": 11,
+              "line": 1,
+              "color": 1,
+              "tone": 1,
+              "base": 1,
+              "unresolved": []
+            },
+            "addressKey": "macro:gate=11|line=1|color=1|tone=1|base=1",
+            "gate": {
+              "number": 11,
+              "bits": "001010",
+              "index": 10
+            },
+            "line": {
+              "number": 1,
+              "bit": 0,
+              "bitIndexTopDown": 5
+            },
+            "color": 1,
+            "tone": 1,
+            "base": 1,
+            "vector": [
+              0,
+              0,
+              1,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              1,
+              0,
+              1,
+              1,
+              0,
+              1,
+              0,
+              1,
+              0,
+              1,
+              0,
+              1,
+              0,
+              1,
+              0
+            ],
+            "kleinHouse": {
+              "house": 4,
+              "row": 3,
+              "bits": "001010",
+              "houseId": "arousing",
+              "houseName": "House of The Arousing"
+            }
+          }
+        },
+        "readings": [
+          {
+            "interpreter": "canonical-address-position",
+            "value": {
+              "state": [
+                "addressed",
+                "capability-required"
+              ],
+              "position": {
+                "planetary": "Uranus",
+                "dimension": "Movement",
+                "gate": 11,
+                "line": 1,
+                "color": 1,
+                "tone": 1,
+                "base": 1,
+                "degree": 23,
+                "minute": 52,
+                "second": 0,
+                "arcAxis": "Desc",
+                "zodiac": "Aquarius",
+                "house": 11
+              },
+              "desired": [
+                "executable"
+              ],
+              "componentId": "synthia-tool-synthesis-worker",
+              "klein": {
+                "address": {
+                  "mode": "macro",
+                  "gate": 11,
+                  "line": 1,
+                  "color": 1,
+                  "tone": 1,
+                  "base": 1,
+                  "unresolved": []
+                },
+                "addressKey": "macro:gate=11|line=1|color=1|tone=1|base=1",
+                "gate": {
+                  "number": 11,
+                  "bits": "001010",
+                  "index": 10
+                },
+                "line": {
+                  "number": 1,
+                  "bit": 0,
+                  "bitIndexTopDown": 5
+                },
+                "color": 1,
+                "tone": 1,
+                "base": 1,
+                "vector": [
+                  0,
+                  0,
+                  1,
+                  0,
+                  1,
+                  0,
+                  0,
+                  1,
+                  0,
+                  1,
+                  0,
+                  1,
+                  1,
+                  0,
+                  1,
+                  0,
+                  1,
+                  0,
+                  1,
+                  0,
+                  1,
+                  0,
+                  1,
+                  0
+                ],
+                "kleinHouse": {
+                  "house": 4,
+                  "row": 3,
+                  "bits": "001010",
+                  "houseId": "arousing",
+                  "houseName": "House of The Arousing"
+                }
+              }
+            }
+          },
+          {
+            "interpreter": "contextual-token-identity",
+            "value": {
+              "form": [
+                "addressed",
+                "capability-required"
+              ],
+              "role": "unresolved-role",
+              "domain": "general",
+              "perspective": "self"
+            }
+          }
+        ]
+      },
+      "design": {
+        "substrate": "Design",
+        "valid": true,
+        "cost": 0,
+        "constraints": [
+          {
+            "constraint": "no-empty-token",
+            "passed": true,
+            "weight": 10,
+            "cost": 0,
+            "detail": null
+          },
+          {
+            "constraint": "bounded-length",
+            "passed": true,
+            "weight": 5,
+            "cost": 0,
+            "detail": null
+          },
+          {
+            "constraint": "transition-requirements-satisfied",
+            "passed": true,
+            "weight": 1000,
+            "cost": 0,
+            "detail": {
+              "passed": true,
+              "required": [
+                "addressed",
+                "capability-required"
+              ],
+              "candidateState": [
+                "addressed",
+                "capability-required",
+                "executable"
+              ]
+            }
+          }
+        ]
+      },
+      "space": {
+        "substrate": "Space",
+        "perspective": "transition",
+        "otherPresent": true,
+        "relations": [
+          {
+            "relation": "canonical-address-relation",
+            "value": {
+              "from": {
+                "planetary": "Uranus",
+                "dimension": "Movement",
+                "gate": 11,
+                "line": 1,
+                "color": 1,
+                "tone": 1,
+                "base": 1,
+                "degree": 23,
+                "minute": 52,
+                "second": 0,
+                "arcAxis": "Desc",
+                "zodiac": "Aquarius",
+                "house": 11
+              },
+              "to": {
+                "planetary": "Mars",
+                "dimension": "Evolution",
+                "gate": 1,
+                "line": 1,
+                "color": 1,
+                "tone": 1,
+                "base": 1,
+                "degree": 59,
+                "minute": 40,
+                "second": 48,
+                "arcAxis": "Desc",
+                "zodiac": "Aquarius",
+                "house": 11,
+                "mode": "macro",
+                "unresolved": []
+              },
+              "compared": [
+                "planetary",
+                "dimension",
+                "gate",
+                "line",
+                "color",
+                "tone",
+                "base",
+                "degree",
+                "minute",
+                "second",
+                "arcAxis",
+                "zodiac",
+                "house"
+              ],
+              "matched": [
+                "line",
+                "color",
+                "tone",
+                "base",
+                "arcAxis",
+                "zodiac",
+                "house"
+              ],
+              "different": [
+                "planetary",
+                "dimension",
+                "gate",
+                "degree",
+                "minute",
+                "second"
+              ],
+              "affinity": 0.5384615384615384,
+              "klein": {
+                "gateChangingLines": [
+                  2,
+                  4
+                ],
+                "gateDistance": 2,
+                "gateOperator": "110101",
+                "kleinHouseOperator": "110110",
+                "kleinHouseTransformValid": true,
+                "vectorOperator": [
+                  1,
+                  1,
+                  0,
+                  1,
+                  0,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "relation": "recipient-aware",
+            "value": {
+              "speaker": "self",
+              "receiver": "unknown",
+              "perspective": "transition",
+              "relationType": "canonical-address"
+            }
+          }
+        ],
+        "resolvedRelation": {
+          "from": {
+            "planetary": "Uranus",
+            "dimension": "Movement",
+            "gate": 11,
+            "line": 1,
+            "color": 1,
+            "tone": 1,
+            "base": 1,
+            "degree": 23,
+            "minute": 52,
+            "second": 0,
+            "arcAxis": "Desc",
+            "zodiac": "Aquarius",
+            "house": 11
+          },
+          "to": {
+            "planetary": "Mars",
+            "dimension": "Evolution",
+            "gate": 1,
+            "line": 1,
+            "color": 1,
+            "tone": 1,
+            "base": 1,
+            "degree": 59,
+            "minute": 40,
+            "second": 48,
+            "arcAxis": "Desc",
+            "zodiac": "Aquarius",
+            "house": 11,
+            "mode": "macro",
+            "unresolved": []
+          },
+          "compared": [
+            "planetary",
+            "dimension",
+            "gate",
+            "line",
+            "color",
+            "tone",
+            "base",
+            "degree",
+            "minute",
+            "second",
+            "arcAxis",
+            "zodiac",
+            "house"
+          ],
+          "matched": [
+            "line",
+            "color",
+            "tone",
+            "base",
+            "arcAxis",
+            "zodiac",
+            "house"
+          ],
+          "different": [
+            "planetary",
+            "dimension",
+            "gate",
+            "degree",
+            "minute",
+            "second"
+          ],
+          "affinity": 0.5384615384615384,
+          "klein": {
+            "gateChangingLines": [
+              2,
+              4
+            ],
+            "gateDistance": 2,
+            "gateOperator": "110101",
+            "kleinHouseOperator": "110110",
+            "kleinHouseTransformValid": true,
+            "vectorOperator": [
+              1,
+              1,
+              0,
+              1,
+              0,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    }
+  },
+  "resolvedCapability": "synthia-tool-synthesis-worker",
+  "action": {
+    "status": "mounted",
+    "toolId": "tool-6a6ddcb8de4ee954",
+    "toolName": "BigramMovementG1L4",
+    "addressKey": "Movement:G1.L4.C4.T4.B4",
+    "dimension": "Movement",
+    "level": 3,
+    "levelName": "Bigram"
+  },
+  "verification": {
+    "status": "supported",
+    "before": [
+      "addressed",
+      "capability-required"
+    ],
+    "after": [
+      "addressed",
+      "capability-required",
+      "executable"
+    ],
+    "desired": [
+      "executable"
+    ],
+    "missing": [],
+    "gained": [
+      "executable"
+    ],
+    "componentId": null,
+    "address": null,
+    "evidence": [
+      {
+        "type": "real-tool-synthesis",
+        "toolId": "tool-6a6ddcb8de4ee954",
+        "addressKey": "Movement:G1.L4.C4.T4.B4",
+        "status": "mounted"
+      }
+    ]
+  }
+}
+✔ real problem: address -> five substrates + Klein -> resolve -> synthesize tool -> verify (8.823984ms)
+✔ catalog resolves one artifact by address, capability, or transition output (1.455231ms)
+✔ remote materialization requires verification and Morph agreement before activation (1.350628ms)
+✔ a verified download remains inactive when Morph declines (0.408411ms)
+✔ catalog survives a fresh runtime through its local store (0.516497ms)
+✔ remote transition output is wired into the main resolver and executes sovereignly (2.265214ms)
+✔ resonance recomposes the field instead of queuing a 27th tool (1.125977ms)
+✔ a goal may express a sparse mixed field without filling 26 positions (0.933187ms)
+(node:2848) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/review/living-organism/src/synthia/semantic-mesh/engine/synthia.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /workspace/review/living-organism/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ component intake addresses first and distinguishes checked-empty from unresolved (4.683681ms)
+✔ Asset Graph detects a missing relationship and clears it when connected (23.568765ms)
+✔ people, places, and things learn relationship resonance without sharing private state (16.366087ms)
+✔ Morph change path requires sandboxed suggestion approval before apply (11.314368ms)
+✔ Idle Suggestion Scout stops at the inbox (2.806822ms)
+✔ the app source contains no donor warehouse or restored donor tree (1.199869ms)
+(node:2855) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/review/living-organism/src/synthia/semantic-mesh/engine/synthia.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /workspace/review/living-organism/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ canonical intake derives a transition descriptor for every addressed component (2.041392ms)
+✔ inverse transition index finds capability by the state it produces (1.210013ms)
+✔ resolver recursively satisfies prerequisite transitions (1.788586ms)
+✔ resolver executes the planned chain and verifies the desired state (1.04162ms)
+✔ live Synthia mounts Transition Resolver and indexes known core transformations (5.317267ms)
+✔ unreachable desired states stay unresolved instead of inventing a capability (0.398735ms)
+✔ successful transition outcomes reinforce capability-to-state resonance (0.523566ms)
+✔ VQ-VAE + semantic completion remains a tiny firing identity model (5.690674ms)
+✔ unlearned traces remain sparse and fire nothing (3.2007ms)
+✔ a learned VQ trace activates the bound ATO and reaches Tool Factory (5.224867ms)
+✔ semantic completion preserves every known coordinate exactly (1.899265ms)
+✔ the synthesized tool produced by trace activation is executable (2.908755ms)
+ℹ tests 111
+ℹ suites 0
+ℹ pass 111
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4607.691176
+
+> world.synthia.acode@1.0.0 test:synthia-release-audit
+> node utils/synthia_release_audit.mjs
+
+Synthia release audit passed.
+No donor warehouse, restored donor tree, or nested archive is present.

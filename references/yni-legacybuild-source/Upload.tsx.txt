@@ -1,0 +1,427 @@
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { FileUploadZone } from "@/components/FileUploadZone";
+import { FileList } from "@/components/FileList";
+import { ObjectUploader } from "@/components/ObjectUploader";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Sparkles, Play, Code2, Upload as UploadIcon } from "lucide-react";
+import type { File, Project } from "@shared/schema";
+type UploadResult = { successful: Array<{ name: string; type: string; size: number; uploadURL: string }> };
+
+export default function Upload() {
+  const { toast } = useToast();
+  const [projectName, setProjectName] = useState("My Legacy Project");
+  const [projectDescription, setProjectDescription] = useState("");
+  const [processingMode, setProcessingMode] = useState("balanced");
+  const [aiCommentaryDepth, setAiCommentaryDepth] = useState([3]);
+  const [showUploader, setShowUploader] = useState(false);
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  const [pastedCode, setPastedCode] = useState("");
+  const [pastedFilename, setPastedFilename] = useState("");
+  const [pastedLanguage, setPastedLanguage] = useState("javascript");
+
+  const { data: projects = [] } = useQuery<Project[]>({
+    queryKey: ['/api/projects'],
+  });
+
+  const { data: files = [] } = useQuery<File[]>({
+    queryKey: ['/api/files', currentProjectId],
+    enabled: !!currentProjectId,
+  });
+
+  const createProjectMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('POST', '/api/projects', {
+        name: projectName,
+        description: projectDescription,
+        processingMode,
+        aiCommentaryDepth: aiCommentaryDepth[0],
+      }) as unknown as Project;
+    },
+    onSuccess: (data) => {
+      setCurrentProjectId(data.id);
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({
+        title: "Project created",
+        description: "You can now upload files to your project",
+      });
+    },
+  });
+
+  const uploadUrlMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/objects/upload', {}) as unknown as { uploadURL: string };
+      return response;
+    },
+  });
+
+  const registerFileMutation = useMutation({
+    mutationFn: async (fileData: { projectId: string; name: string; type: string; size: number; objectPath: string; content?: string }) => {
+      return await apiRequest('POST', '/api/files', fileData);
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/files', currentProjectId] });
+      
+      // Show special message for ZIP extraction
+      if (data?.extractedCount && data?.extractedCount > 0) {
+        toast({
+          title: "ZIP extracted",
+          description: `${data.extractedCount} files extracted from archive`,
+        });
+      }
+    },
+  });
+
+  const handleGetUploadParameters = async () => {
+    if (!currentProjectId) {
+      await createProjectMutation.mutateAsync();
+    }
+    const data = await uploadUrlMutation.mutateAsync();
+    return {
+      method: 'PUT' as const,
+      url: data.uploadURL,
+    };
+  };
+
+  const handleUploadComplete = async (result: UploadResult) => {
+    if (!currentProjectId) return;
+
+    for (const file of result.successful) {
+      await registerFileMutation.mutateAsync({
+        projectId: currentProjectId,
+        name: file.name,
+        type: file.type || 'application/octet-stream',
+        size: file.size,
+        objectPath: file.uploadURL,
+      });
+    }
+
+    toast({
+      title: "Files uploaded",
+      description: `${result.successful.length} file(s) ready for review`,
+    });
+
+    // Redirect to plan review instead of auto-processing
+    window.location.href = `/plan/${currentProjectId}`;
+  };
+
+  const startProcessingMutation = useMutation({
+    mutationFn: async (projectId: string) => {
+      return await apiRequest('POST', `/api/projects/${projectId}/process`, {});
+    },
+    onSuccess: () => {
+      toast({
+        title: "Processing started",
+        description: "Your project is being analyzed",
+      });
+      window.location.href = '/process';
+    },
+  });
+
+  const handlePasteCode = async () => {
+    if (!pastedCode.trim() || !pastedFilename.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Please provide both code and filename",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    let projectId = currentProjectId;
+    if (!projectId) {
+      const newProject = await createProjectMutation.mutateAsync();
+      projectId = newProject.id;
+    }
+
+    if (!projectId) {
+      toast({
+        title: "Error",
+        description: "Failed to create project",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const languageExtensions: Record<string, string> = {
+      javascript: "js",
+      typescript: "ts",
+      python: "py",
+      java: "java",
+      cpp: "cpp",
+      go: "go",
+      rust: "rs",
+      ruby: "rb",
+      php: "php",
+      html: "html",
+      css: "css",
+      json: "json",
+    };
+
+    const ext = languageExtensions[pastedLanguage] || "txt";
+    const filename = pastedFilename.includes('.') ? pastedFilename : `${pastedFilename}.${ext}`;
+
+    await registerFileMutation.mutateAsync({
+      projectId,
+      name: filename,
+      type: `text/${pastedLanguage}`,
+      size: new Blob([pastedCode]).size,
+      objectPath: `/inline/${filename}`,
+      content: pastedCode,
+    });
+
+    toast({
+      title: "Code added",
+      description: `${filename} added to project`,
+    });
+
+    setPastedCode("");
+    setPastedFilename("");
+  };
+
+  return (
+    <div className="h-full overflow-y-auto">
+      <div className="p-6 max-w-7xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Create Your Legacy</h1>
+          <p className="text-muted-foreground">
+            Upload your code, books, and resources to generate an optimized application
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="p-4 lg:col-span-1">
+            <h3 className="font-semibold mb-4">Project Settings</h3>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="project-name">Project Name</Label>
+              <Input
+                id="project-name"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                placeholder="Enter project name"
+                data-testid="input-project-name"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="project-description">Description (Optional)</Label>
+              <Textarea
+                id="project-description"
+                value={projectDescription}
+                onChange={(e) => setProjectDescription(e.target.value)}
+                placeholder="Describe your project goals"
+                rows={3}
+                data-testid="input-project-description"
+              />
+            </div>
+
+            <div>
+              <Label className="mb-3 block">Processing Mode</Label>
+              <RadioGroup value={processingMode} onValueChange={setProcessingMode}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="fast" id="fast" data-testid="radio-fast" />
+                  <Label htmlFor="fast" className="cursor-pointer">Fast - Quick analysis</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="balanced" id="balanced" data-testid="radio-balanced" />
+                  <Label htmlFor="balanced" className="cursor-pointer">Balanced - Recommended</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="thorough" id="thorough" data-testid="radio-thorough" />
+                  <Label htmlFor="thorough" className="cursor-pointer">Thorough - Deep analysis</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div>
+              <Label className="mb-3 block">
+                AI Commentary Depth: {aiCommentaryDepth[0]}
+              </Label>
+              <Slider
+                value={aiCommentaryDepth}
+                onValueChange={setAiCommentaryDepth}
+                min={1}
+                max={5}
+                step={1}
+                data-testid="slider-commentary-depth"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                <span>Minimal</span>
+                <span>Maximum</span>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <div className="lg:col-span-2">
+          {!currentProjectId ? (
+            <FileUploadZone onUploadClick={() => setShowUploader(true)} />
+          ) : (
+            <Tabs defaultValue="upload" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-2 h-auto">
+                <TabsTrigger value="upload" className="gap-2">
+                  <UploadIcon className="w-4 h-4" />
+                  <span>Upload Files</span>
+                </TabsTrigger>
+                <TabsTrigger value="paste" className="gap-2">
+                  <Code2 className="w-4 h-4" />
+                  <span>Paste Code</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="upload" className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">Files</h3>
+                    <p className="text-sm text-muted-foreground">Upload your project files</p>
+                  </div>
+                  <ObjectUploader
+                    maxNumberOfFiles={50}
+                    maxFileSize={524288000}
+                    onGetUploadParameters={handleGetUploadParameters}
+                    onComplete={handleUploadComplete}
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Add More Files
+                  </ObjectUploader>
+                </div>
+
+                <FileList files={files} />
+
+                {files.length > 0 && (
+                  <div className="flex justify-end">
+                    <Button
+                      size="lg"
+                      onClick={() => startProcessingMutation.mutate(currentProjectId)}
+                      disabled={startProcessingMutation.isPending}
+                      data-testid="button-start-processing"
+                    >
+                      <Play className="w-4 h-4 mr-2" />
+                      Start Processing
+                    </Button>
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="paste" className="space-y-4">
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Paste Your Code</h3>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="paste-filename">Filename</Label>
+                        <Input
+                          id="paste-filename"
+                          value={pastedFilename}
+                          onChange={(e) => setPastedFilename(e.target.value)}
+                          placeholder="e.g., app or app.js"
+                          data-testid="input-paste-filename"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="paste-language">Language</Label>
+                        <Select value={pastedLanguage} onValueChange={setPastedLanguage}>
+                          <SelectTrigger id="paste-language" data-testid="select-paste-language">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="javascript">JavaScript</SelectItem>
+                            <SelectItem value="typescript">TypeScript</SelectItem>
+                            <SelectItem value="python">Python</SelectItem>
+                            <SelectItem value="java">Java</SelectItem>
+                            <SelectItem value="cpp">C++</SelectItem>
+                            <SelectItem value="go">Go</SelectItem>
+                            <SelectItem value="rust">Rust</SelectItem>
+                            <SelectItem value="ruby">Ruby</SelectItem>
+                            <SelectItem value="php">PHP</SelectItem>
+                            <SelectItem value="html">HTML</SelectItem>
+                            <SelectItem value="css">CSS</SelectItem>
+                            <SelectItem value="json">JSON</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="paste-code">Code</Label>
+                      <Textarea
+                        id="paste-code"
+                        value={pastedCode}
+                        onChange={(e) => setPastedCode(e.target.value)}
+                        placeholder="Paste your code here..."
+                        rows={15}
+                        className="font-mono text-sm"
+                        data-testid="textarea-paste-code"
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setPastedCode("");
+                          setPastedFilename("");
+                        }}
+                      >
+                        Clear
+                      </Button>
+                      <Button
+                        onClick={handlePasteCode}
+                        disabled={registerFileMutation.isPending}
+                        data-testid="button-add-pasted-code"
+                      >
+                        <Code2 className="w-4 h-4 mr-2" />
+                        Add to Project
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+
+                <FileList files={files} />
+
+                {files.length > 0 && (
+                  <div className="flex justify-end">
+                    <Button
+                      size="lg"
+                      onClick={() => startProcessingMutation.mutate(currentProjectId)}
+                      disabled={startProcessingMutation.isPending}
+                      data-testid="button-start-processing-paste"
+                    >
+                      <Play className="w-4 h-4 mr-2" />
+                      Start Processing
+                    </Button>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          )}
+
+          {showUploader && !currentProjectId && (
+            <ObjectUploader
+              maxNumberOfFiles={50}
+              maxFileSize={524288000}
+              onGetUploadParameters={handleGetUploadParameters}
+              onComplete={handleUploadComplete}
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Upload Files
+            </ObjectUploader>
+          )}
+        </div>
+      </div>
+    </div>
+    </div>
+  );
+}

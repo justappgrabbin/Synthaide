@@ -1,0 +1,254 @@
+import { useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Code2, Plus } from "lucide-react";
+import type { Project, File } from "@shared/schema";
+
+export default function WriteCode() {
+  const { toast } = useToast();
+  const [projectName, setProjectName] = useState("My Code Project");
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  const [pastedCode, setPastedCode] = useState("");
+  const [pastedFilename, setPastedFilename] = useState("");
+  const [pastedLanguage, setPastedLanguage] = useState("javascript");
+
+  const { data: files = [] } = useQuery<File[]>({
+    queryKey: ['/api/files', currentProjectId],
+    enabled: !!currentProjectId,
+  });
+
+  const createProjectMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('POST', '/api/projects', {
+        name: projectName,
+        description: "Code written directly in app",
+        processingMode: "balanced",
+        aiCommentaryDepth: 3,
+      }) as unknown as Project;
+    },
+    onSuccess: (data) => {
+      setCurrentProjectId(data.id);
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+    },
+  });
+
+  const registerFileMutation = useMutation({
+    mutationFn: async (fileData: { projectId: string; name: string; type: string; size: number; objectPath: string; content?: string }) => {
+      return await apiRequest('POST', '/api/files', fileData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/files', currentProjectId] });
+    },
+  });
+
+  const handleAddCode = async () => {
+    if (!pastedCode.trim() || !pastedFilename.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Please provide both code and filename",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      let projectId = currentProjectId;
+      if (!projectId) {
+        console.log("Creating new project...");
+        const newProject = await createProjectMutation.mutateAsync();
+        console.log("Project created:", newProject);
+        projectId = newProject.id;
+        setCurrentProjectId(projectId);
+      }
+
+      if (!projectId) {
+        console.error("No project ID after creation");
+        toast({
+          title: "Error",
+          description: "Failed to create project",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      console.log("Using project ID:", projectId);
+
+      const languageExtensions: Record<string, string> = {
+        javascript: "js",
+        typescript: "ts",
+        python: "py",
+        java: "java",
+        cpp: "cpp",
+        go: "go",
+        rust: "rs",
+        ruby: "rb",
+        php: "php",
+        html: "html",
+        css: "css",
+        json: "json",
+      };
+
+      const ext = languageExtensions[pastedLanguage] || "txt";
+      const filename = pastedFilename.includes('.') ? pastedFilename : `${pastedFilename}.${ext}`;
+
+      console.log("Registering file:", filename, "to project:", projectId);
+      await registerFileMutation.mutateAsync({
+        projectId,
+        name: filename,
+        type: `text/${pastedLanguage}`,
+        size: new Blob([pastedCode]).size,
+        objectPath: `/inline/${filename}`,
+        content: pastedCode,
+      });
+      console.log("File registered successfully");
+
+      toast({
+        title: "Code added",
+        description: `${filename} added to project`,
+      });
+
+      setPastedCode("");
+      setPastedFilename("");
+    } catch (error) {
+      console.error("Error adding code:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to add code",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <div className="h-full overflow-y-auto">
+      <div className="p-6 max-w-5xl mx-auto space-y-6">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-2">Write Your Code</h1>
+          <p className="text-muted-foreground">Simple code editor - just paste and save</p>
+        </div>
+
+        <Card className="p-6">
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="project-name-simple">Project Name</Label>
+              <Input
+                id="project-name-simple"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                placeholder="Enter project name"
+                className="text-lg"
+                data-testid="input-project-name-simple"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="filename-simple">Filename</Label>
+                <Input
+                  id="filename-simple"
+                  value={pastedFilename}
+                  onChange={(e) => setPastedFilename(e.target.value)}
+                  placeholder="e.g., app or main"
+                  data-testid="input-filename-simple"
+                />
+              </div>
+              <div>
+                <Label htmlFor="language-simple">Language</Label>
+                <Select value={pastedLanguage} onValueChange={setPastedLanguage}>
+                  <SelectTrigger id="language-simple" data-testid="select-language-simple">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="javascript">JavaScript</SelectItem>
+                    <SelectItem value="typescript">TypeScript</SelectItem>
+                    <SelectItem value="python">Python</SelectItem>
+                    <SelectItem value="java">Java</SelectItem>
+                    <SelectItem value="cpp">C++</SelectItem>
+                    <SelectItem value="go">Go</SelectItem>
+                    <SelectItem value="rust">Rust</SelectItem>
+                    <SelectItem value="ruby">Ruby</SelectItem>
+                    <SelectItem value="php">PHP</SelectItem>
+                    <SelectItem value="html">HTML</SelectItem>
+                    <SelectItem value="css">CSS</SelectItem>
+                    <SelectItem value="json">JSON</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="code-area" className="text-lg font-semibold">Your Code</Label>
+              <Textarea
+                id="code-area"
+                value={pastedCode}
+                onChange={(e) => setPastedCode(e.target.value)}
+                placeholder="Paste or type your code here..."
+                rows={20}
+                className="font-mono text-sm mt-2"
+                data-testid="textarea-code-simple"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setPastedCode("");
+                  setPastedFilename("");
+                }}
+              >
+                Clear
+              </Button>
+              <Button
+                onClick={handleAddCode}
+                disabled={registerFileMutation.isPending}
+                size="lg"
+                data-testid="button-add-code-simple"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Code to Project
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        {files.length > 0 && (
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Files in Project ({files.length})</h3>
+            <div className="space-y-2">
+              {files.map((file) => (
+                <div key={file.id} className="flex items-center gap-3 p-3 rounded-md border">
+                  <Code2 className="w-4 h-4 text-muted-foreground" />
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{file.name}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 pt-4 border-t">
+              <Button
+                onClick={() => {
+                  if (currentProjectId) {
+                    window.location.href = `/plan/${currentProjectId}`;
+                  }
+                }}
+                size="lg"
+                className="w-full"
+                data-testid="button-process-all-files"
+              >
+                Review Plan & Process
+              </Button>
+            </div>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}

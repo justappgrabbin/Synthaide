@@ -1,0 +1,136 @@
+import { useQuery } from "@tanstack/react-query";
+import { ProcessingPipeline } from "@/components/ProcessingPipeline";
+import { StatusCards } from "@/components/StatusCards";
+import { AIInsightPanel } from "@/components/AIInsightPanel";
+import type { Project, BookReference } from "@shared/schema";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useLocation } from "wouter";
+import { Plus, Eye, Sparkles, Upload, Code2, FileArchive } from "lucide-react";
+
+export default function Process() {
+  const [, setLocation] = useLocation();
+  const { data: projects = [] } = useQuery<Project[]>({
+    queryKey: ['/api/projects'],
+  });
+
+  const currentProject = projects.find(p => p.status !== 'completed') || projects[0];
+
+  const { data: bookReferences = [] } = useQuery<BookReference[]>({
+    queryKey: ['/api/projects', currentProject?.id, 'book-references'],
+    enabled: !!currentProject?.id,
+  });
+
+  const getCurrentStep = (status: string) => {
+    const stepMap: Record<string, number> = {
+      uploading: 0,
+      analyzing: 1,
+      sorting: 2,
+      unifying: 3,
+      generating: 4,
+      completed: 5,
+    };
+    return stepMap[status] || 0;
+  };
+
+  if (!currentProject) {
+    return (
+      <div className="p-8 max-w-7xl mx-auto">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold mb-2">No Active Project</h2>
+          <p className="text-muted-foreground">Create a project and upload files to begin</p>
+        </div>
+      </div>
+    );
+  }
+
+  const getModeDisplay = (mode: string | null | undefined) => {
+    switch (mode) {
+      case 'quick':
+        return { name: 'Quick Assembler', icon: '⚡', color: 'bg-blue-500' };
+      case 'creative':
+        return { name: 'Creative Assembler', icon: '✨', color: 'bg-purple-500' };
+      case 'pusher':
+        return { name: 'Pusher Mode', icon: '🚀', color: 'bg-green-500' };
+      default:
+        return { name: 'Standard Mode', icon: '⚙️', color: 'bg-gray-500' };
+    }
+  };
+
+  const modeInfo = getModeDisplay(currentProject.selectedMode);
+
+  return (
+    <div className="p-8 max-w-7xl mx-auto space-y-8">
+      <div>
+        <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
+          <div className="flex items-center gap-3">
+            <h1 className="text-4xl font-bold">Processing: {currentProject.name}</h1>
+            <span className={`px-3 py-1 rounded-full text-white text-sm font-medium ${modeInfo.color}`}>
+              {modeInfo.icon} {modeInfo.name}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" data-testid="button-add-more-files">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add More Files
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setLocation('/write')} data-testid="menu-write-code">
+                  <Code2 className="w-4 h-4 mr-2" />
+                  Write Code
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLocation('/')} data-testid="menu-upload-files">
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Files
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLocation('/unzip')} data-testid="menu-unzip">
+                  <FileArchive className="w-4 h-4 mr-2" />
+                  Unzip Archive
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {currentProject.status === 'completed' && (
+              <Button
+                onClick={() => setLocation('/app')}
+                data-testid="button-view-generated-app"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                View Generated App
+              </Button>
+            )}
+            <Button
+              variant="secondary"
+              onClick={() => setLocation('/')}
+              data-testid="button-new-project"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              New Project
+            </Button>
+          </div>
+        </div>
+        <p className="text-muted-foreground">
+          AI is analyzing your files and generating your application
+        </p>
+      </div>
+
+      <ProcessingPipeline currentStep={getCurrentStep(currentProject.status)} />
+
+      <StatusCards
+        filesProcessed={currentProject.filesProcessed}
+        codeLinesAnalyzed={currentProject.codeLinesAnalyzed}
+        patternsUnified={currentProject.patternsUnified}
+        booksReferenced={currentProject.booksReferenced}
+      />
+
+      <AIInsightPanel bookReferences={bookReferences} />
+    </div>
+  );
+}

@@ -1,0 +1,159 @@
+import { pgTable, text, varchar, jsonb, timestamp, integer, boolean } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+export const projects = pgTable("projects", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  description: text("description"),
+  processingMode: text("processing_mode").notNull().default("balanced"),
+  aiCommentaryDepth: integer("ai_commentary_depth").notNull().default(3),
+  status: text("status").notNull().default("uploading"),
+  
+  // Planning workflow fields
+  planningSummary: jsonb("planning_summary"),
+  selectedMode: text("selected_mode"),
+  planStatus: text("plan_status").default("pending"),
+  executionStatus: text("execution_status").default("not_started"),
+  gitTarget: jsonb("git_target"),
+  
+  filesProcessed: integer("files_processed").notNull().default(0),
+  codeLinesAnalyzed: integer("code_lines_analyzed").notNull().default(0),
+  patternsUnified: integer("patterns_unified").notNull().default(0),
+  booksReferenced: integer("books_referenced").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const files = pgTable("files", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  type: text("type").notNull(),
+  size: integer("size").notNull(),
+  status: text("status").notNull().default("pending"),
+  content: text("content"),
+  objectPath: text("object_path"),
+  uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
+});
+
+export const processingResults = pgTable("processing_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  fileId: varchar("file_id").references(() => files.id, { onDelete: "cascade" }),
+  step: text("step").notNull(),
+  status: text("status").notNull(),
+  result: jsonb("result"),
+  processingTime: integer("processing_time"),
+  processedAt: timestamp("processed_at").notNull().defaultNow(),
+});
+
+export const unusedFiles = pgTable("unused_files", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  fileId: varchar("file_id").notNull().references(() => files.id, { onDelete: "cascade" }),
+  reason: text("reason").notNull(),
+  suggestedAction: text("suggested_action"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const generatedCode = pgTable("generated_code", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  filePath: text("file_path").notNull(),
+  content: text("content").notNull(),
+  language: text("language"),
+  hasGaps: boolean("has_gaps").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const aiInsights = pgTable("ai_insights", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  type: text("type").notNull(),
+  content: jsonb("content").notNull(),
+  confidence: integer("confidence"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertProjectSchema = createInsertSchema(projects).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  filesProcessed: true,
+  codeLinesAnalyzed: true,
+  patternsUnified: true,
+  booksReferenced: true,
+});
+
+export const insertFileSchema = createInsertSchema(files).omit({
+  id: true,
+  uploadedAt: true,
+});
+
+export const insertProcessingResultSchema = createInsertSchema(processingResults).omit({
+  id: true,
+  processedAt: true,
+});
+
+export const insertUnusedFileSchema = createInsertSchema(unusedFiles).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertGeneratedCodeSchema = createInsertSchema(generatedCode).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAiInsightSchema = createInsertSchema(aiInsights).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertProject = z.infer<typeof insertProjectSchema>;
+export type Project = typeof projects.$inferSelect;
+
+export type InsertFile = z.infer<typeof insertFileSchema>;
+export type File = typeof files.$inferSelect;
+
+export type InsertProcessingResult = z.infer<typeof insertProcessingResultSchema>;
+export type ProcessingResult = typeof processingResults.$inferSelect;
+
+export type InsertUnusedFile = z.infer<typeof insertUnusedFileSchema>;
+export type UnusedFile = typeof unusedFiles.$inferSelect;
+
+export type InsertGeneratedCode = z.infer<typeof insertGeneratedCodeSchema>;
+export type GeneratedCode = typeof generatedCode.$inferSelect;
+
+export type InsertAiInsight = z.infer<typeof insertAiInsightSchema>;
+export type AiInsight = typeof aiInsights.$inferSelect;
+
+export interface MonetizationSuggestion {
+  title: string;
+  description: string;
+  confidence: number;
+  potentialRevenue: string;
+}
+
+export interface NextStepRecommendation {
+  title: string;
+  description: string;
+  priority: "high" | "medium" | "low";
+  estimatedTime: string;
+}
+
+export interface BookReference {
+  title: string;
+  author: string;
+  quote: string;
+  relevance: string;
+}
+
+export interface CodeGap {
+  filePath: string;
+  lineNumber: number;
+  description: string;
+  suggestedCompletion: string;
+}

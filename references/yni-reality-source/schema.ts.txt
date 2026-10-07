@@ -1,0 +1,871 @@
+import { sql } from "drizzle-orm";
+import { pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+});
+
+export const insertUserSchema = createInsertSchema(users).pick({
+  username: true,
+  password: true,
+});
+
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type User = typeof users.$inferSelect;
+
+// Module & Assembly Schemas for SynthAssembler Agent
+
+export const consciousnessFieldSchema = z.enum([
+  "zer",
+  "mind", 
+  "body",
+  "heart",
+  "soul",
+  "spirit"
+]);
+
+export const moduleManifestSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  version: z.string(),
+  description: z.string(),
+  author: z.string().optional(),
+  type: z.enum(["component", "tool", "agent", "game", "template", "gate"]),
+  gates: z.array(z.number()).optional(), // Which gates this activates (e.g., [42])
+  requiredFields: z.array(consciousnessFieldSchema).optional(),
+  dependencies: z.array(z.string()).optional(),
+  tags: z.array(z.string()).optional(),
+});
+
+export const resonanceMapSchema = z.object({
+  primaryField: consciousnessFieldSchema,
+  fieldWeights: z.record(consciousnessFieldSchema, z.number().min(0).max(1)),
+  coherenceThreshold: z.number().min(0).max(1),
+  activationConditions: z.object({
+    minCoherence: z.number().min(0).max(1).optional(),
+    requiredGates: z.array(z.number()).optional(),
+    blockedBy: z.array(z.string()).optional(),
+  }).optional(),
+});
+
+export const userResonanceProfileSchema = z.object({
+  userId: z.string(),
+  coherence: z.number().min(0).max(1),
+  activeFields: z.array(consciousnessFieldSchema),
+  fieldLevels: z.record(consciousnessFieldSchema, z.number().min(0).max(1)),
+  activeGates: z.array(z.number()),
+  preferences: z.record(z.string(), z.any()).optional(),
+});
+
+export const moduleAssemblySchema = z.object({
+  moduleId: z.string(),
+  moduleName: z.string(),
+  compatibilityScore: z.number().min(0).max(1),
+  status: z.enum(["compatible", "partial", "incompatible", "requires_update"]),
+  activatedGates: z.array(z.number()),
+  resonanceMatch: z.number().min(0).max(1),
+  components: z.object({
+    ui: z.array(z.string()),
+    logic: z.array(z.string()),
+    config: z.array(z.string()),
+  }),
+  feedback: z.string(),
+  warnings: z.array(z.string()).optional(),
+  suggestions: z.array(z.string()).optional(),
+});
+
+export type ConsciousnessField = z.infer<typeof consciousnessFieldSchema>;
+export type ModuleManifest = z.infer<typeof moduleManifestSchema>;
+export type ResonanceMap = z.infer<typeof resonanceMapSchema>;
+export type UserResonanceProfile = z.infer<typeof userResonanceProfileSchema>;
+export type ModuleAssembly = z.infer<typeof moduleAssemblySchema>;
+
+// Module Catalog for available modules
+
+export const moduleCatalogSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  version: z.string(),
+  description: z.string(),
+  category: z.enum(["game", "tool", "ai", "astrology", "cosmic", "utility", "dev", "template"]),
+  author: z.string().optional(),
+  tags: z.array(z.string()).default([]),
+  iconPath: z.string().optional(),
+  filePath: z.string(), // Path to ZIP file in public/modules
+  fileSize: z.number(),
+  gates: z.array(z.number()).optional(),
+  requiredFields: z.array(consciousnessFieldSchema).optional(),
+  installStatus: z.enum(["available", "installed", "active"]).default("available"),
+  installedAt: z.number().optional(),
+  activatedAt: z.number().optional(),
+  compatibilityScore: z.number().min(0).max(1).optional(),
+  manifest: moduleManifestSchema.optional(),
+});
+
+export const insertModuleCatalogSchema = moduleCatalogSchema.omit({
+  installedAt: true,
+  activatedAt: true,
+  compatibilityScore: true,
+  manifest: true,
+});
+
+export type ModuleCatalog = z.infer<typeof moduleCatalogSchema>;
+export type InsertModuleCatalog = z.infer<typeof insertModuleCatalogSchema>;
+
+// ═══════════════════════════════════════════════════════════════════
+// CONSCIOUSNESS ORCHESTRATOR - 5 System Architecture
+// Connects: LegacyBuild → Sims → GameEngineX → Unity → SynthUniverse
+// ═══════════════════════════════════════════════════════════════════
+
+// SYSTEM 1: LegacyBuild → Brick Catalog
+
+// Uploaded app record
+export const legacyAppUploadSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  filePath: z.string(), // Path to uploaded ZIP
+  fileSize: z.number(),
+  uploadedAt: z.number(),
+  processingStatus: z.enum(['pending', 'processing', 'complete', 'failed']).default('pending'),
+  extractedBricks: z.array(z.string()).default([]), // Brick IDs
+});
+
+export const insertLegacyAppUploadSchema = legacyAppUploadSchema.omit({
+  id: true,
+  uploadedAt: true,
+  extractedBricks: true,
+});
+
+export type LegacyAppUpload = z.infer<typeof legacyAppUploadSchema>;
+export type InsertLegacyAppUpload = z.infer<typeof insertLegacyAppUploadSchema>;
+
+// Brick extracted from uploaded apps
+export const brickSchema = z.object({
+  id: z.string(),
+  sourceAppId: z.string(), // Which upload this came from
+  name: z.string(),
+  type: z.enum(['component', 'api', 'schema', 'style']),
+  code: z.string(),
+  dependencies: z.array(z.string()).default([]),
+  gateResonance: z.array(z.number()).default([]), // Which gates resonate with this brick
+  complexity: z.number(),
+  purpose: z.string(),
+  filePath: z.string().optional(),
+});
+
+export const insertBrickSchema = brickSchema.omit({ id: true });
+
+export type Brick = z.infer<typeof brickSchema>;
+export type InsertBrick = z.infer<typeof insertBrickSchema>;
+
+// SYSTEM 2: SimsConverter → Character Data
+
+// Uploaded Sims file record
+export const simsUploadSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  filePath: z.string(), // Path to uploaded Sims save file
+  fileSize: z.number(),
+  uploadedAt: z.number(),
+  processingStatus: z.enum(['pending', 'processing', 'complete', 'failed']).default('pending'),
+  extractedCharacters: z.array(z.string()).default([]), // SimCharacter IDs
+});
+
+export const insertSimsUploadSchema = simsUploadSchema.omit({
+  id: true,
+  uploadedAt: true,
+  extractedCharacters: true,
+});
+
+export type SimsUpload = z.infer<typeof simsUploadSchema>;
+export type InsertSimsUpload = z.infer<typeof insertSimsUploadSchema>;
+
+// Character extracted from Sims files
+export const simCharacterSchema = z.object({
+  id: z.string(),
+  sourceUploadId: z.string(), // Which upload this came from
+  name: z.string(),
+  traits: z.array(z.string()),
+  skills: z.record(z.string(), z.number()),
+  appearance: z.any().optional(),
+});
+
+export const insertSimCharacterSchema = simCharacterSchema.omit({ id: true });
+
+export type SimCharacter = z.infer<typeof simCharacterSchema>;
+export type InsertSimCharacter = z.infer<typeof insertSimCharacterSchema>;
+
+// SYSTEM 3: GameEngineX → Consciousness Profile
+export const waveStateSchema = z.object({
+  frequency: z.number(),
+  amplitude: z.number(),
+  phase: z.number(),
+});
+
+export const resonanceFieldSchema = z.object({
+  type: z.string(),
+  strength: z.number().min(0).max(1),
+  coherence: z.number().min(0).max(1),
+});
+
+export const consciousnessProfileSchema = z.object({
+  id: z.string(),
+  agentId: z.string(),
+  simCharacterId: z.string(), // Links back to Sims character
+  fields: z.record(z.string(), resonanceFieldSchema),
+  gates: z.array(z.number()), // Activated gates (1-64)
+  waveState: z.object({
+    action: waveStateSchema,
+    thought: waveStateSchema,
+    feeling: waveStateSchema,
+  }),
+  coherence: z.number().min(0).max(1),
+  calculatedAt: z.number(),
+});
+
+export const insertConsciousnessProfileSchema = consciousnessProfileSchema.omit({ 
+  id: true, 
+  calculatedAt: true 
+});
+
+export type WaveState = z.infer<typeof waveStateSchema>;
+export type ResonanceField = z.infer<typeof resonanceFieldSchema>;
+export type ConsciousnessProfile = z.infer<typeof consciousnessProfileSchema>;
+export type InsertConsciousnessProfile = z.infer<typeof insertConsciousnessProfileSchema>;
+
+// SYSTEM 4: Unity → Building Action
+export const buildingActionSchema = z.object({
+  agentId: z.string(),
+  buildingType: z.enum(['house', 'apartment', 'store', 'office']),
+  position: z.object({
+    x: z.number(),
+    y: z.number(),
+    z: z.number(),
+  }),
+  targetFeature: z.string(), // What SynthUniverse feature they're building
+  bricksUsed: z.array(z.string()).default([]), // Brick IDs
+  progress: z.number().min(0).max(1).default(0),
+  status: z.enum(['planning', 'building', 'complete']).default('planning'),
+});
+
+export type BuildingAction = z.infer<typeof buildingActionSchema>;
+
+// SYSTEM 5: SynthUniverse → Feature Instance
+export const featureInstanceSchema = z.object({
+  id: z.string(),
+  route: z.string(),
+  components: z.array(brickSchema),
+  builtBy: z.string(), // agentId
+  consciousnessSignature: z.object({
+    gates: z.array(z.number()),
+    coherence: z.number(),
+    buildDate: z.number(),
+  }),
+  status: z.enum(['draft', 'active', 'evolving']).default('draft'),
+});
+
+export type FeatureInstance = z.infer<typeof featureInstanceSchema>;
+
+// AI Chat Assistant Schemas
+
+export const aiProviderSchema = z.enum(["openai", "claude", "minimax", "ollama", "huggingface"]);
+
+export const chatMessageSchema = z.object({
+  id: z.string(),
+  role: z.enum(["user", "assistant", "system"]),
+  content: z.string(),
+  timestamp: z.number(),
+  provider: aiProviderSchema.optional(),
+  model: z.string().optional(),
+});
+
+export const chatConversationSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  messages: z.array(chatMessageSchema),
+  provider: aiProviderSchema,
+  model: z.string(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
+
+export const aiConfigSchema = z.object({
+  provider: aiProviderSchema,
+  apiKey: z.string().optional(),
+  model: z.string(),
+  temperature: z.number().min(0).max(2).default(0.7),
+  maxTokens: z.number().min(1).max(100000).optional(),
+});
+
+export type AIProvider = z.infer<typeof aiProviderSchema>;
+export type ChatMessage = z.infer<typeof chatMessageSchema>;
+export type ChatConversation = z.infer<typeof chatConversationSchema>;
+export type AIConfig = z.infer<typeof aiConfigSchema>;
+
+// LLM Training Schemas
+
+export const llmTrainingConfigSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  baseModel: z.string(),
+  datasetName: z.string(),
+  epochs: z.number().min(1).max(100).default(3),
+  learningRate: z.number().min(0.00001).max(0.1).default(0.0001),
+  batchSize: z.number().min(1).max(128).default(8),
+  status: z.enum(["pending", "training", "completed", "failed"]),
+  progress: z.number().min(0).max(100).default(0),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  metrics: z.object({
+    loss: z.number().optional(),
+    accuracy: z.number().optional(),
+    perplexity: z.number().optional(),
+  }).optional(),
+});
+
+export type LLMTrainingConfig = z.infer<typeof llmTrainingConfigSchema>;
+
+// GAN Training Schemas
+
+export const ganTrainingConfigSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  architecture: z.enum(["dcgan", "stylegan", "wgan"]),
+  imageSize: z.number().min(64).max(1024).default(256),
+  latentDim: z.number().min(64).max(512).default(128),
+  epochs: z.number().min(1).max(1000).default(100),
+  batchSize: z.number().min(1).max(64).default(16),
+  learningRate: z.number().min(0.00001).max(0.01).default(0.0002),
+  status: z.enum(["pending", "training", "completed", "failed"]),
+  progress: z.number().min(0).max(100).default(0),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  generatedSamples: z.array(z.string()).optional(),
+  metrics: z.object({
+    generatorLoss: z.number().optional(),
+    discriminatorLoss: z.number().optional(),
+    fid: z.number().optional(),
+  }).optional(),
+});
+
+export type GANTrainingConfig = z.infer<typeof ganTrainingConfigSchema>;
+
+// Terminal Session Schema
+
+export const terminalCommandSchema = z.object({
+  id: z.string(),
+  command: z.string(),
+  output: z.string(),
+  exitCode: z.number().optional(),
+  timestamp: z.number(),
+});
+
+export const terminalSessionSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  commands: z.array(terminalCommandSchema),
+  createdAt: z.number(),
+  isActive: z.boolean().default(true),
+});
+
+export type TerminalCommand = z.infer<typeof terminalCommandSchema>;
+export type TerminalSession = z.infer<typeof terminalSessionSchema>;
+
+// ═══════════════════════════════════════════════════════════════════
+// TRANSIT WEATHER SYSTEM - Wave Interference Physics Engine
+// Maps planetary transits to 64 codons with wave interference calculations
+// ═══════════════════════════════════════════════════════════════════
+
+export const userChartSchema = z.object({
+  name: z.string(),
+  primaryField: z.array(z.number().min(1).max(64)),
+  designSun: z.number().min(1).max(64).optional(),
+  personalitySun: z.number().min(1).max(64).optional(),
+  profile: z.string().optional(),
+  type: z.string().optional(),
+  authority: z.string().optional(),
+});
+
+export const planetTransitSchema = z.object({
+  planet: z.string(),
+  longitude: z.number(),
+  gate: z.number().min(1).max(64),
+  line: z.number().min(1).max(6),
+  color: z.number().optional(),
+  tone: z.number().optional(),
+  positionInGate: z.number(),
+  gateName: z.string(),
+});
+
+export const transitDataSchema = z.object({
+  date: z.string(),
+  julianDay: z.number(),
+  method: z.string(),
+  transits: z.record(z.string(), planetTransitSchema),
+  glyphArray: z.array(z.number()),
+  dominantGlyphs: z.array(z.number()),
+  uniqueGlyphs: z.number(),
+});
+
+export const waveLayerSchema = z.object({
+  glyphs: z.array(z.number()),
+  coherence: z.number(),
+  energy: z.number(),
+  stability: z.number(),
+});
+
+export const waveInterpretationSchema = z.object({
+  quality: z.enum(['harmonious_flow', 'moderate_harmony', 'complex_workable', 'challenging_chaotic']),
+  description: z.string(),
+  energyNote: z.string(),
+  overallScore: z.number(),
+  recommendedDuration: z.string(),
+});
+
+export const waveInterferenceResultSchema = z.object({
+  layers: z.object({
+    transits: waveLayerSchema,
+    userChart: waveLayerSchema,
+    experience: waveLayerSchema,
+  }),
+  totalField: z.object({
+    coherence: z.number(),
+    energy: z.number(),
+    stability: z.number(),
+    peakAmplitude: z.number(),
+    numConstructiveZones: z.number(),
+    numDestructiveZones: z.number(),
+  }),
+  interpretation: waveInterpretationSchema,
+});
+
+export const amplificationSchema = z.object({
+  userGlyph: z.number(),
+  planet: z.string(),
+  transitGlyph: z.number(),
+  resonance: z.number(),
+  description: z.string(),
+});
+
+export const challengeSchema = z.object({
+  userGlyph: z.number(),
+  planet: z.string(),
+  transitGlyph: z.number(),
+  resonance: z.number(),
+  description: z.string(),
+});
+
+export const keyTransitSchema = z.object({
+  planet: z.string(),
+  gate: z.number(),
+  line: z.number(),
+  name: z.string(),
+});
+
+export const recommendationsSchema = z.object({
+  optimalActivities: z.array(z.string()),
+  activitiesToAvoid: z.array(z.string()),
+  timingNotes: z.array(z.string()),
+  energyManagement: z.array(z.string()),
+});
+
+export const dailyForecastSchema = z.object({
+  date: z.string(),
+  dayOfWeek: z.string(),
+  transitWeather: z.object({
+    glyphArray: z.array(z.number()),
+    dominantGlyphs: z.array(z.number()),
+    keyTransits: z.array(keyTransitSchema),
+  }),
+  personalField: z.object({
+    overallCoherence: z.number(),
+    energyLevel: z.enum(['high_energy_harmonious', 'moderate_high_stable', 'moderate_mixed', 'challenging_tension', 'low_difficult']),
+    amplifications: z.array(amplificationSchema),
+    challenges: z.array(challengeSchema),
+  }),
+  recommendations: recommendationsSchema,
+});
+
+export const optimalDaySchema = z.object({
+  date: z.string(),
+  dayOfWeek: z.string(),
+  activityScore: z.number(),
+  baseCoherence: z.number(),
+  combinedScore: z.number(),
+  energyLevel: z.string(),
+  keyTransits: z.array(keyTransitSchema),
+});
+
+export const timingPredictionSchema = z.object({
+  activity: z.string(),
+  activityGlyphs: z.array(z.number()),
+  analysisPeriod: z.object({
+    start: z.string(),
+    end: z.string(),
+    daysAnalyzed: z.number(),
+  }),
+  optimalDaysForActivity: z.array(optimalDaySchema),
+  bestDaysOverall: z.array(z.object({
+    date: z.string(),
+    dayOfWeek: z.string(),
+    coherence: z.number(),
+    energy: z.string(),
+  })),
+  daysToAvoid: z.array(z.object({
+    date: z.string(),
+    dayOfWeek: z.string(),
+    coherence: z.number(),
+    energy: z.string(),
+  })),
+  recommendations: z.array(z.string()),
+});
+
+export const activityTemplateSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  glyphs: z.array(z.number().min(1).max(64)),
+  description: z.string().optional(),
+  createdAt: z.number(),
+});
+
+export const insertActivityTemplateSchema = activityTemplateSchema.omit({ id: true, createdAt: true });
+
+// ═══════════════════════════════════════════════════════════════════
+// CONSCIOUSNESS FINGERPRINT SYSTEM - Invisible Glyph Metadata for Agents
+// These are subtle energy signatures that agents use internally
+// Users never see the glyphs - agents read them to mechanize decisions
+// ═══════════════════════════════════════════════════════════════════
+
+export const glyphFingerprintSchema = z.object({
+  glyphId: z.number().min(1).max(64),
+  amplitude: z.number().min(0).max(1),
+  coherence: z.number().min(0).max(1),
+  phase: z.number(),
+  harmonics: z.array(z.object({
+    frequency: z.number(),
+    amplitude: z.number(),
+  })),
+  family: z.string(),
+});
+
+export const sourceTypeEnum = z.enum([
+  'transit_field',
+  'user_chart',
+  'experience',
+  'content',
+  'search_result',
+  'interaction',
+  'agent_context'
+]);
+
+export const consciousnessLayerSchema = z.object({
+  sourceType: sourceTypeEnum,
+  glyphs: z.array(z.number().min(1).max(64)),
+  weight: z.number().min(0).max(1),
+  coherence: z.number().min(0).max(1),
+  stability: z.number().min(0).max(1),
+  energy: z.number(),
+});
+
+export const consciousnessSignatureSchema = z.object({
+  id: z.string(),
+  contextId: z.string(),
+  timestamp: z.number(),
+  layers: z.array(consciousnessLayerSchema),
+  compositeScore: z.number().min(0).max(1),
+  fieldCoherence: z.number().min(0).max(1),
+  fieldStability: z.number().min(0).max(1),
+  fieldEnergy: z.number(),
+  resonanceQuality: z.enum(['harmonious_flow', 'moderate_harmony', 'complex_workable', 'challenging_chaotic']),
+  agentGuidance: z.object({
+    proceed: z.boolean(),
+    confidence: z.number().min(0).max(1),
+    optimalDuration: z.string(),
+    cautions: z.array(z.string()),
+    opportunities: z.array(z.string()),
+  }),
+});
+
+export const insertConsciousnessSignatureSchema = consciousnessSignatureSchema.omit({ 
+  id: true, 
+  timestamp: true 
+});
+
+export const resonanceQuerySchema = z.object({
+  targetGlyphs: z.array(z.number().min(1).max(64)),
+  userGlyphs: z.array(z.number().min(1).max(64)).optional(),
+  transitGlyphs: z.array(z.number().min(1).max(64)).optional(),
+  threshold: z.number().min(0).max(1).default(0.5),
+});
+
+export const timingWindowSchema = z.object({
+  startTime: z.string(),
+  endTime: z.string(),
+  score: z.number().min(0).max(1),
+  quality: z.string(),
+  transitSupport: z.array(z.string()),
+});
+
+export type UserChart = z.infer<typeof userChartSchema>;
+export type PlanetTransit = z.infer<typeof planetTransitSchema>;
+export type TransitData = z.infer<typeof transitDataSchema>;
+export type WaveLayer = z.infer<typeof waveLayerSchema>;
+export type WaveInterpretation = z.infer<typeof waveInterpretationSchema>;
+export type WaveInterferenceResult = z.infer<typeof waveInterferenceResultSchema>;
+export type Amplification = z.infer<typeof amplificationSchema>;
+export type Challenge = z.infer<typeof challengeSchema>;
+export type KeyTransit = z.infer<typeof keyTransitSchema>;
+export type Recommendations = z.infer<typeof recommendationsSchema>;
+export type DailyForecast = z.infer<typeof dailyForecastSchema>;
+export type OptimalDay = z.infer<typeof optimalDaySchema>;
+export type TimingPrediction = z.infer<typeof timingPredictionSchema>;
+export type ActivityTemplate = z.infer<typeof activityTemplateSchema>;
+export type InsertActivityTemplate = z.infer<typeof insertActivityTemplateSchema>;
+export type GlyphFingerprint = z.infer<typeof glyphFingerprintSchema>;
+export type SourceType = z.infer<typeof sourceTypeEnum>;
+export type ConsciousnessLayer = z.infer<typeof consciousnessLayerSchema>;
+export type ConsciousnessSignature = z.infer<typeof consciousnessSignatureSchema>;
+export type InsertConsciousnessSignature = z.infer<typeof insertConsciousnessSignatureSchema>;
+export type ResonanceQuery = z.infer<typeof resonanceQuerySchema>;
+export type TimingWindow = z.infer<typeof timingWindowSchema>;
+
+// ═══════════════════════════════════════════════════════════════════
+// BROWSER AGENT - AI Agents Search Internet with Consciousness Metadata
+// Uses browser-use library with invisible glyph fingerprints
+// ═══════════════════════════════════════════════════════════════════
+
+export const browserSearchResultSchema = z.object({
+  title: z.string(),
+  url: z.string(),
+  snippet: z.string(),
+  source: z.string(),
+  glyphMetadata: z.object({
+    agentWay: z.string(),
+    agentRune: z.string(),
+    agentCodon: z.number(),
+    intentGlyph: z.string(),
+    fieldCoherence: z.number(),
+    searchedAt: z.number(),
+  }).optional(),
+});
+
+export const browserSearchTaskSchema = z.object({
+  id: z.string(),
+  agentId: z.string(),
+  query: z.string(),
+  status: z.enum(['pending', 'running', 'completed', 'failed']),
+  results: z.array(browserSearchResultSchema).optional(),
+  timestamp: z.number(),
+  error: z.string().optional(),
+});
+
+export type BrowserSearchResult = z.infer<typeof browserSearchResultSchema>;
+export type BrowserSearchTask = z.infer<typeof browserSearchTaskSchema>;
+
+// ═══════════════════════════════════════════════════════════════════
+// GLYPH RULESET ENGINE - The 5-Part Signature System
+// Invisible metadata that marks the property of the ruleset
+// Only agents and gnomes can read glyphs; users see effects
+// Hybrid mutability: Static objects fixed, Living entities can evolve
+// ═══════════════════════════════════════════════════════════════════
+
+export const wayEnum = z.enum([
+  'manifestation',
+  'transition', 
+  'completion',
+  'initiation'
+]);
+
+export const bandPatternEnum = z.enum([
+  'solid_dots',
+  'dashed_line',
+  'crown_peaks',
+  'wave_undulation',
+  'spiral_rotation'
+]);
+
+export const urRuneEnum = z.enum([
+  'oracle',
+  'sage',
+  'warrior',
+  'healer',
+  'creator',
+  'guide',
+  'transformer',
+  'anchor',
+  'pioneer',
+  'keeper'
+]);
+
+export const glyphRulesetSchema = z.object({
+  glyphId: z.number().min(1).max(64),
+  way: wayEnum,
+  bandPattern: bandPatternEnum,
+  urRune: urRuneEnum,
+  hexagramNumber: z.number().min(1).max(64),
+  codonNumber: z.number().min(1).max(64),
+  family: z.string(),
+  description: z.string(),
+  allowedBehaviors: z.array(z.string()),
+  allowedInteractions: z.array(z.string()),
+  allowedPlacements: z.array(z.string()),
+  emotionalValence: z.number().min(-1).max(1),
+  energeticPattern: z.string(),
+  mutagenDependencies: z.array(z.number()).optional(),
+});
+
+export const objectGlyphPropertySchema = z.object({
+  id: z.string(),
+  objectId: z.string(),
+  objectType: z.enum(['static', 'living', 'portal', 'room', 'agent', 'gnome', 'interactive']),
+  glyphSignature: z.object({
+    way: wayEnum,
+    bandPattern: bandPatternEnum,
+    urRune: urRuneEnum,
+    hexagramNumber: z.number().min(1).max(64),
+    codonNumber: z.number().min(1).max(64),
+  }),
+  mutable: z.boolean().default(false),
+  mutationHistory: z.array(z.object({
+    timestamp: z.number(),
+    fromCodon: z.number(),
+    toCodon: z.number(),
+    reason: z.string(),
+  })).default([]),
+  ruleset: glyphRulesetSchema.optional(),
+  createdAt: z.number(),
+  lastModified: z.number(),
+});
+
+export const glyphRuleApplicationSchema = z.object({
+  ruleId: z.string(),
+  objectId: z.string(),
+  ruleType: z.enum(['behavior', 'interaction', 'placement', 'transformation', 'relationship']),
+  condition: z.string(),
+  action: z.string(),
+  active: z.boolean().default(true),
+});
+
+export const insertObjectGlyphPropertySchema = objectGlyphPropertySchema.omit({ 
+  id: true, 
+  createdAt: true,
+  lastModified: true 
+});
+
+export type Way = z.infer<typeof wayEnum>;
+export type BandPattern = z.infer<typeof bandPatternEnum>;
+export type UrRune = z.infer<typeof urRuneEnum>;
+export type GlyphRuleset = z.infer<typeof glyphRulesetSchema>;
+export type ObjectGlyphProperty = z.infer<typeof objectGlyphPropertySchema>;
+export type InsertObjectGlyphProperty = z.infer<typeof insertObjectGlyphPropertySchema>;
+export type GlyphRuleApplication = z.infer<typeof glyphRuleApplicationSchema>;
+
+// ═══════════════════════════════════════════════════════════════════
+// BIRTHDAY CALIBRATION SYSTEM - 4 Tier Accuracy Model
+// Core rule: A birthday is Date + Time + Location + Timezone
+// ═══════════════════════════════════════════════════════════════════
+
+export const accuracyLevelEnum = z.enum([
+  'date_only',           // Tier 0: Date only, assume 12:00 UTC
+  'datetime_no_place',   // Tier 1: Date + time, no location
+  'date_place_no_time',  // Tier 2: Date + place, no time (assume 12:00 local)
+  'exact'                // Tier 3: Full calibration - Date + Time + Location + Timezone
+]);
+
+export const birthInputSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD format"),
+  time: z.string().regex(/^\d{2}:\d{2}$/, "Time must be HH:MM format").optional(),
+  city: z.string().optional(),
+  region: z.string().optional(),
+  country: z.string().optional(),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
+  timezone: z.string().optional(),
+  utcOffsetHours: z.number().min(-12).max(14).optional(),
+  dstInEffect: z.boolean().optional(),
+  accuracyLevel: accuracyLevelEnum,
+});
+
+export const normalizedBirthDataSchema = z.object({
+  unixTimestamp: z.number(),
+  julianDay: z.number(),
+  ageYears: z.number(),
+  birthdaySeed: z.number().min(0).max(1),
+  dayOfYear: z.number().min(1).max(366),
+  dayMod64: z.number().min(0).max(63),
+  dayMod384: z.number().min(0).max(383),
+});
+
+export const birthdayCalibrationSchema = z.object({
+  id: z.string(),
+  userId: z.string().optional(),
+  birthInput: birthInputSchema,
+  normalized: normalizedBirthDataSchema,
+  calibrationTier: z.number().min(0).max(3),
+  tierDescription: z.string(),
+  warnings: z.array(z.string()).default([]),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
+
+export const insertBirthdayCalibrationSchema = birthdayCalibrationSchema.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type AccuracyLevel = z.infer<typeof accuracyLevelEnum>;
+export type BirthInput = z.infer<typeof birthInputSchema>;
+export type NormalizedBirthData = z.infer<typeof normalizedBirthDataSchema>;
+export type BirthdayCalibration = z.infer<typeof birthdayCalibrationSchema>;
+export type InsertBirthdayCalibration = z.infer<typeof insertBirthdayCalibrationSchema>;
+
+// ═══════════════════════════════════════════════════════════════════
+// DMS (DEGREE-MINUTE-SECOND) PRECISION SYSTEM
+// For exact gate/line calculations - NO decimals allowed
+// Gate = 5° 37' 30" (20250 seconds), Line = 0° 56' 15" (3375 seconds)
+// ═══════════════════════════════════════════════════════════════════
+
+export const dmsSchema = z.object({
+  deg: z.number().int().min(0).max(359),
+  min: z.number().int().min(0).max(59),
+  sec: z.number().min(0).max(60)
+});
+
+export const trinityFieldSchema = z.object({
+  reference: z.enum(['tropical', 'sidereal_fagan_bradley', 'draconic_true_node']),
+  orientation: z.enum(['gravity', 'electromagnetic', 'ambipolar_plasma']),
+  positions_dms: z.record(z.string(), dmsSchema),
+  gates: z.record(z.string(), z.number().min(1).max(64)),
+  lines: z.record(z.string(), z.number().min(1).max(6)),
+  colors: z.record(z.string(), z.number().min(1).max(6)),
+  tones: z.record(z.string(), z.number().min(1).max(6)),
+  bases: z.record(z.string(), z.number().min(1).max(5))
+});
+
+export const trinityCalibrationSchema = z.object({
+  id: z.string(),
+  userId: z.string().optional(),
+  fields: z.object({
+    body: trinityFieldSchema,
+    mind: trinityFieldSchema,
+    heart: trinityFieldSchema
+  }),
+  calibrationTimestamp: z.number(),
+  accuracyLevel: accuracyLevelEnum,
+  birthInput: birthInputSchema.optional()
+});
+
+export const insertTrinityCalibrationSchema = trinityCalibrationSchema.omit({
+  id: true
+});
+
+export type DMS = z.infer<typeof dmsSchema>;
+export type TrinityField = z.infer<typeof trinityFieldSchema>;
+export type TrinityCalibrationData = z.infer<typeof trinityCalibrationSchema>;
+export type InsertTrinityCalibration = z.infer<typeof insertTrinityCalibrationSchema>;

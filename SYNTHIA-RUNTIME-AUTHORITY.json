@@ -1,0 +1,41 @@
+{
+  "version": "synthia.runtime-authority.v1",
+  "canonicalFrontDoor": [
+    "src/pages/welcome/welcome.js",
+    "src/synthia/synthiaRuntime.mjs",
+    "src/synthia/orchestrator/runtime.mjs"
+  ],
+  "canonicalStateAuthority": "src/synthia/canonicalState.mjs",
+  "compatibilityOnly": {
+    "src/synthia/atoEngine.js": "delegates to synthiaRuntime.mjs",
+    "src/synthia/stateSpace.js": "re-exports canonicalState.mjs"
+  },
+  "activeIndependentAutomata": [
+    "morph-chat",
+    "deg-grammar-learner",
+    "geo-deg-grammar-geometry",
+    "generative-experiment-orchestrator",
+    "synthia-tool-synthesis-worker"
+  ],
+  "removedCompetingLogic": [
+    "legacy atoEngine AUTOLING/DISEMINER front-door process",
+    "legacy stateSpace FNV text-hash address assignment"
+  ],
+  "firstGenerationStack": [
+    "recognizer",
+    "deg",
+    "geo-deg",
+    "micro-state-space",
+    "composition-predictor",
+    "exploration-controller",
+    "puct",
+    "task-assignment",
+    "experiment-execution",
+    "score",
+    "learn"
+  ],
+  "notActiveYet": [
+    "SwarmResearch population controller",
+    "AutoLabs correction/repair layer"
+  ]
+}

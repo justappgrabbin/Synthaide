@@ -1,0 +1,667 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { analyzeCode, unifyCodePatterns, generateMonetizationSuggestions, generateNextSteps, fillCodeGaps, extractBookReferences, detectCodeGaps } from "./openai";
+import JSZip from "jszip";
+import pLimit from "p-limit";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  const objectStorageService = new ObjectStorageService();
+
+  // ============= Projects =============
+  app.get("/api/projects", async (req, res) => {
+    try {
+      const projects = await storage.getAllProjects();
+      res.json(projects);
+    } catch (error) {
+      console.error("Error getting projects:", error);
+      res.status(500).json({ error: "Failed to get projects" });
+    }
+  });
+
+  app.get("/api/projects/:id", async (req, res) => {
+    try {
+      const project = await storage.getProject(req.params.id);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      res.json(project);
+    } catch (error) {
+      console.error("Error getting project:", error);
+      res.status(500).json({ error: "Failed to get project" });
+    }
+  });
+
+  app.post("/api/projects", async (req, res) => {
+    try {
+      const project = await storage.createProject({
+        name: req.body.name,
+        description: req.body.description,
+        processingMode: req.body.processingMode || 'balanced',
+        aiCommentaryDepth: req.body.aiCommentaryDepth || 3,
+        status: 'uploading',
+        planningSummary: null,
+        selectedMode: null,
+        planStatus: 'pending',
+        executionStatus: 'not_started',
+        gitTarget: null,
+      });
+      res.json(project);
+    } catch (error) {
+      console.error("Error creating project:", error);
+      res.status(500).json({ error: "Failed to create project" });
+    }
+  });
+
+  // ============= Files =============
+  app.get("/api/files/:projectId", async (req, res) => {
+    try {
+      const files = await storage.getFilesByProject(req.params.projectId);
+      res.json(files);
+    } catch (error) {
+      console.error("Error getting files:", error);
+      res.status(500).json({ error: "Failed to get files" });
+    }
+  });
+
+  // Helper function to extract ZIP files
+  async function extractZipFile(objectPath: string, projectId: string) {
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+      const buffer = await objectFile.download();
+      const zipData = buffer[0];
+      
+      const zip = await JSZip.loadAsync(zipData);
+      const extractedFiles = [];
+      
+      for (const [filename, file] of Object.entries(zip.files)) {
+        if (file.dir) continue; // Skip directories
+        if (filename.startsWith('__MACOSX/') || filename.includes('.DS_Store')) continue; // Skip Mac metadata
+        
+        // Determine file type
+        const isTextFile = filename.endsWith('.js') || filename.endsWith('.jsx') || 
+          filename.endsWith('.ts') || filename.endsWith('.tsx') ||
+          filename.endsWith('.py') || filename.endsWith('.java') ||
+          filename.endsWith('.cpp') || filename.endsWith('.c') ||
+          filename.endsWith('.go') || filename.endsWith('.rs') ||
+          filename.endsWith('.rb') || filename.endsWith('.php') ||
+          filename.endsWith('.html') || filename.endsWith('.css') ||
+          filename.endsWith('.json') || filename.endsWith('.md') ||
+          filename.endsWith('.txt');
+        
+        const fileType = filename.endsWith('.js') || filename.endsWith('.jsx') || filename.endsWith('.ts') || filename.endsWith('.tsx') ? 'text/javascript'
+          : filename.endsWith('.py') ? 'text/python'
+          : filename.endsWith('.java') ? 'text/java'
+          : filename.endsWith('.cpp') || filename.endsWith('.c') ? 'text/cpp'
+          : filename.endsWith('.go') ? 'text/go'
+          : filename.endsWith('.rs') ? 'text/rust'
+          : filename.endsWith('.rb') ? 'text/ruby'
+          : filename.endsWith('.php') ? 'text/php'
+          : filename.endsWith('.html') ? 'text/html'
+          : filename.endsWith('.css') ? 'text/css'
+          : filename.endsWith('.json') ? 'application/json'
+          : filename.endsWith('.md') || filename.endsWith('.txt') ? 'text/plain'
+          : filename.endsWith('.pdf') ? 'application/pdf'
+          : filename.endsWith('.epub') ? 'application/epub+zip'
+          : 'application/octet-stream';
+        
+        let content: string | null = null;
+        let fileSize = 0;
+        let filePath = `/inline/${filename}`;
+        
+        // Only store text files inline
+        if (isTextFile) {
+          content = await file.async("string");
+          fileSize = content.length;
+        } else {
+          // For binary files, upload to object storage
+          const binaryData = await file.async("uint8array");
+          const buffer = Buffer.from(binaryData);
+          fileSize = buffer.length;
+          
+          // Upload binary file to object storage
+          filePath = await objectStorageService.uploadBuffer(buffer, filename, fileType);
+        }
+        
+        const createdFile = await storage.createFile({
+          projectId,
+          name: filename,
+          type: fileType,
+          size: fileSize,
+          objectPath: filePath,
+          content,
+          status: "pending",
+        });
+        
+        extractedFiles.push(createdFile);
+      }
+      
+      return extractedFiles;
+    } catch (error) {
+      console.error("Error extracting ZIP file:", error);
+      throw error;
+    }
+  }
+
+  app.post("/api/files", async (req, res) => {
+    try {
+      const isInlineCode = req.body.objectPath?.startsWith('/inline/');
+      const normalizedPath = isInlineCode ? req.body.objectPath : objectStorageService.normalizeObjectEntityPath(req.body.objectPath);
+      
+      // Check if this is a ZIP file
+      const isZip = req.body.type?.includes('zip') || req.body.name?.endsWith('.zip');
+      
+      if (isZip && !isInlineCode) {
+        // Extract ZIP contents and register each file
+        const extractedFiles = await extractZipFile(normalizedPath, req.body.projectId);
+        
+        // Update project status after files are added
+        await storage.updateProject(req.body.projectId, {
+          status: 'planning',
+          planStatus: 'ready',
+        });
+        
+        res.json({ 
+          message: `ZIP file extracted: ${extractedFiles.length} files added`,
+          extractedCount: extractedFiles.length,
+          files: extractedFiles
+        });
+      } else {
+        // Regular file registration
+        const file = await storage.createFile({
+          projectId: req.body.projectId,
+          name: req.body.name,
+          type: req.body.type,
+          size: req.body.size,
+          objectPath: normalizedPath,
+          status: 'pending',
+          content: req.body.content || null,
+        });
+        
+        // Update project status after file is added
+        await storage.updateProject(req.body.projectId, {
+          status: 'planning',
+          planStatus: 'ready',
+        });
+        
+        res.json(file);
+      }
+    } catch (error) {
+      console.error("Error creating file:", error);
+      res.status(500).json({ error: "Failed to create file" });
+    }
+  });
+
+  // ============= Object Storage =============
+  app.post("/api/objects/upload", async (req, res) => {
+    try {
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ error: "Failed to get upload URL" });
+    }
+  });
+
+  app.get("/objects/:objectPath(*)", async (req, res) => {
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error accessing object:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
+
+  // ============= Planning =============
+  app.post("/api/projects/:id/confirm-plan", async (req, res) => {
+    try {
+      const { mode } = req.body;
+      const project = await storage.getProject(req.params.id);
+      
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      // Update project with selected mode and plan status
+      const updatedProject = await storage.updateProject(req.params.id, {
+        selectedMode: mode,
+        planStatus: "confirmed",
+        executionStatus: "ready",
+        status: "processing",
+      });
+
+      res.json(updatedProject);
+    } catch (error) {
+      console.error("Error confirming plan:", error);
+      res.status(500).json({ error: "Failed to confirm plan" });
+    }
+  });
+
+  // ============= Processing =============
+  app.post("/api/projects/:id/process", async (req, res) => {
+    try {
+      const project = await storage.getProject(req.params.id);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      await storage.updateProject(project.id, { status: 'analyzing', executionStatus: 'running' });
+
+      // Get mode from project (if plan was confirmed) or use default
+      const mode = project.selectedMode || 'quick';
+
+      // Process files in background with mode-specific logic
+      processProject(project.id).catch(console.error);
+
+      res.json({ message: "Processing started", mode });
+    } catch (error) {
+      console.error("Error starting processing:", error);
+      res.status(500).json({ error: "Failed to start processing" });
+    }
+  });
+
+  // Helper function to download file content from object storage
+  async function downloadFileContent(objectPath: string): Promise<string> {
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+      const buffer = await objectFile.download();
+      return buffer[0].toString('utf-8');
+    } catch (error) {
+      console.error(`Error downloading file ${objectPath}:`, error);
+      return '';
+    }
+  }
+
+  // Configurable concurrency limit (3-4 files at once)
+  const FILE_ANALYSIS_CONCURRENCY = Math.max(1, Math.min(Number(process.env.FILE_ANALYSIS_CONCURRENCY) || 3, 4));
+
+  // Helper function to analyze a single file with all status updates
+  async function analyzeSingleFile(params: { file: any; mode: string; projectId: string }) {
+    const { file, mode, projectId } = params;
+    const startTime = Date.now();
+    
+    try {
+      let fileContent = '';
+      
+      // Check if this is pasted inline code
+      if (file.objectPath?.startsWith('/inline/')) {
+        fileContent = file.content || '';
+      } else if (file.objectPath) {
+        fileContent = await downloadFileContent(file.objectPath);
+      }
+      
+      if (!fileContent && (file.type.includes('text') || file.type.includes('javascript') || file.type.includes('python'))) {
+        fileContent = `// Placeholder content for ${file.name}\nfunction example() {\n  return "Legacy";\n}`;
+      }
+
+      // Handle code files
+      if (file.type.includes('text') || file.type.includes('javascript') || file.type.includes('python') || file.type.includes('java') || file.type.includes('cpp')) {
+        await storage.updateFile(file.id, { content: fileContent, status: 'processing' });
+        
+        const analysis = await analyzeCode(fileContent, file.name, mode);
+        const linesOfCode = analysis.linesOfCode || fileContent.split('\n').length;
+
+        await storage.createProcessingResult({
+          projectId,
+          fileId: file.id,
+          step: `Analyzed ${file.name}`,
+          status: 'completed',
+          result: analysis,
+          processingTime: Date.now() - startTime,
+        });
+
+        await storage.updateFile(file.id, { status: 'completed' });
+
+        return { type: 'code', file, content: fileContent, analysis, linesOfCode };
+      } 
+      // Handle book files
+      else if (file.type.includes('pdf') || file.type.includes('epub')) {
+        await storage.updateFile(file.id, { status: 'processing' });
+        
+        const textContent = fileContent || `Sample text from ${file.name}`;
+        const refs = await extractBookReferences(textContent);
+        await storage.updateFile(file.id, { status: 'completed' });
+
+        return { type: 'book', file, references: refs };
+      }
+      // Handle unsupported file types (binary assets, etc.)
+      else {
+        await storage.createUnusedFile({
+          projectId,
+          fileId: file.id,
+          reason: `Unsupported file type: ${file.type}`,
+          suggestedAction: 'Only code files, text files, PDFs, and EPUBs are analyzed',
+        });
+        await storage.updateFile(file.id, { status: 'completed' });
+        return null;
+      }
+    } catch (fileError) {
+      console.error(`Error processing file ${file.name}:`, fileError);
+      await storage.updateFile(file.id, { status: 'error' });
+      await storage.createUnusedFile({
+        projectId,
+        fileId: file.id,
+        reason: `Processing error: ${(fileError as Error).message}`,
+        suggestedAction: 'Re-upload the file or check file format',
+      });
+      throw fileError;
+    }
+  }
+
+  // Background processing function
+  async function processProject(projectId: string) {
+    try {
+      const project = await storage.getProject(projectId);
+      if (!project) return;
+
+      // Get selected mode (default to 'quick' if not set)
+      const mode = project.selectedMode || 'quick';
+
+      const files = await storage.getFilesByProject(projectId);
+      
+      // Step 1: Analyze files
+      await storage.updateProject(projectId, { status: 'analyzing' });
+      await storage.createProcessingResult({
+        projectId,
+        step: `Analysis Started (${mode} mode)`,
+        status: 'in-progress',
+        result: null,
+        processingTime: null,
+        fileId: null,
+      });
+
+      const analyzedFiles: any[] = [];
+      const bookReferences: any[] = [];
+      let totalLines = 0;
+
+      // Process files in parallel with concurrency limit
+      const limit = pLimit(FILE_ANALYSIS_CONCURRENCY);
+      const filePromises = files.map(file => 
+        limit(() => analyzeSingleFile({ file, mode, projectId }))
+      );
+
+      const results = await Promise.allSettled(filePromises);
+
+      // Aggregate results from successful file analyses
+      for (const result of results) {
+        if (result.status === 'fulfilled' && result.value) {
+          if (result.value.type === 'code') {
+            analyzedFiles.push({ 
+              file: result.value.file, 
+              content: result.value.content, 
+              analysis: result.value.analysis 
+            });
+            totalLines += result.value.linesOfCode;
+          } else if (result.value.type === 'book') {
+            bookReferences.push(...result.value.references);
+          }
+        }
+        // Errors are already logged and handled inside analyzeSingleFile
+      }
+
+      await storage.updateProject(projectId, {
+        filesProcessed: files.length,
+        codeLinesAnalyzed: totalLines,
+        status: 'sorting',
+      });
+
+      // Step 2: Sort and categorize
+      await storage.createProcessingResult({
+        projectId,
+        step: 'Sorting Complete',
+        status: 'completed',
+        result: { categorized: analyzedFiles.length },
+        processingTime: 800,
+        fileId: null,
+      });
+
+      // Step 3: Unify patterns
+      await storage.updateProject(projectId, { status: 'unifying' });
+      
+      if (analyzedFiles.length > 1) {
+        const unification = await unifyCodePatterns(analyzedFiles.map(af => ({
+          filename: af.file.name,
+          content: af.content,
+          analysis: af.analysis,
+        })));
+
+        await storage.updateProject(projectId, {
+          patternsUnified: unification.patterns?.length || 3,
+        });
+
+        await storage.createProcessingResult({
+          projectId,
+          step: 'Pattern Unification',
+          status: 'completed',
+          result: unification,
+          processingTime: 1500,
+          fileId: null,
+        });
+      }
+
+      // Step 4: Generate output
+      await storage.updateProject(projectId, { status: 'generating' });
+
+      for (const { file, content } of analyzedFiles) {
+        const gaps = await detectCodeGaps(content);
+        
+        await storage.createGeneratedCode({
+          projectId,
+          filePath: `src/${file.name}`,
+          content,
+          language: file.name.endsWith('.js') ? 'javascript' : 'python',
+          hasGaps: gaps.length > 0,
+        });
+      }
+
+      // Generate AI insights
+      const codebaseSummary = analyzedFiles.map(af => af.content).join('\n\n');
+      const monetization = await generateMonetizationSuggestions(project.description || project.name, codebaseSummary);
+      const nextSteps = await generateNextSteps(project.description || project.name, codebaseSummary);
+
+      await storage.createAiInsight({
+        projectId,
+        type: 'monetization',
+        content: { suggestions: monetization },
+        confidence: 85,
+      });
+
+      await storage.createAiInsight({
+        projectId,
+        type: 'next-steps',
+        content: { steps: nextSteps },
+        confidence: 90,
+      });
+
+      // Save book references
+      if (bookReferences.length > 0) {
+        await storage.createAiInsight({
+          projectId,
+          type: 'book-references',
+          content: { references: bookReferences },
+          confidence: 95,
+        });
+
+        await storage.updateProject(projectId, {
+          booksReferenced: bookReferences.length,
+        });
+      }
+
+      await storage.updateProject(projectId, { status: 'completed' });
+
+    } catch (error) {
+      console.error("Error processing project:", error);
+      await storage.updateProject(projectId, { status: 'error' });
+    }
+  }
+
+  // ============= Reports =============
+  app.get("/api/projects/:id/processing-results", async (req, res) => {
+    try {
+      const results = await storage.getProcessingResultsByProject(req.params.id);
+      res.json(results);
+    } catch (error) {
+      console.error("Error getting processing results:", error);
+      res.status(500).json({ error: "Failed to get processing results" });
+    }
+  });
+
+  app.get("/api/projects/:id/unused-files", async (req, res) => {
+    try {
+      const unusedFiles = await storage.getUnusedFilesByProject(req.params.id);
+      res.json(unusedFiles);
+    } catch (error) {
+      console.error("Error getting unused files:", error);
+      res.status(500).json({ error: "Failed to get unused files" });
+    }
+  });
+
+  app.get("/api/projects/:id/monetization", async (req, res) => {
+    try {
+      const insights = await storage.getAiInsightsByProject(req.params.id);
+      const monetization = insights.find(i => i.type === 'monetization');
+      res.json(monetization?.content || { suggestions: [] });
+    } catch (error) {
+      console.error("Error getting monetization:", error);
+      res.status(500).json({ error: "Failed to get monetization suggestions" });
+    }
+  });
+
+  app.get("/api/projects/:id/next-steps", async (req, res) => {
+    try {
+      const insights = await storage.getAiInsightsByProject(req.params.id);
+      const nextSteps = insights.find(i => i.type === 'next-steps');
+      res.json(nextSteps?.content || { steps: [] });
+    } catch (error) {
+      console.error("Error getting next steps:", error);
+      res.status(500).json({ error: "Failed to get next steps" });
+    }
+  });
+
+  app.get("/api/projects/:id/book-references", async (req, res) => {
+    try {
+      const insights = await storage.getAiInsightsByProject(req.params.id);
+      const bookRefs = insights.find(i => i.type === 'book-references');
+      res.json((bookRefs?.content as any)?.references || []);
+    } catch (error) {
+      console.error("Error getting book references:", error);
+      res.status(500).json({ error: "Failed to get book references" });
+    }
+  });
+
+  // ============= Generated Code =============
+  app.get("/api/projects/:id/generated-code", async (req, res) => {
+    try {
+      const code = await storage.getGeneratedCodeByProject(req.params.id);
+      res.json(code);
+    } catch (error) {
+      console.error("Error getting generated code:", error);
+      res.status(500).json({ error: "Failed to get generated code" });
+    }
+  });
+
+  app.get("/api/projects/:id/code-gaps", async (req, res) => {
+    try {
+      const generatedCode = await storage.getGeneratedCodeByProject(req.params.id);
+      const gaps: any[] = [];
+
+      for (const code of generatedCode) {
+        if (code.hasGaps) {
+          const codeGaps = await detectCodeGaps(code.content);
+          gaps.push(...codeGaps.map(g => ({ ...g, filePath: code.filePath })));
+        }
+      }
+
+      res.json({ gaps });
+    } catch (error) {
+      console.error("Error getting code gaps:", error);
+      res.status(500).json({ error: "Failed to get code gaps" });
+    }
+  });
+
+  app.post("/api/projects/:id/fill-gaps", async (req, res) => {
+    try {
+      const generatedCode = await storage.getGeneratedCodeByProject(req.params.id);
+
+      for (const code of generatedCode) {
+        if (code.hasGaps) {
+          const gaps = await detectCodeGaps(code.content);
+          if (gaps.length > 0) {
+            const filled = await fillCodeGaps(code.content, gaps);
+            await storage.updateGeneratedCode(code.id, {
+              content: filled,
+              hasGaps: false,
+            });
+          }
+        }
+      }
+
+      res.json({ message: "Gaps filled successfully" });
+    } catch (error) {
+      console.error("Error filling gaps:", error);
+      res.status(500).json({ error: "Failed to fill code gaps" });
+    }
+  });
+
+  // ============= Download =============
+  app.post("/api/projects/:id/download", async (req, res) => {
+    try {
+      const project = await storage.getProject(req.params.id);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      const generatedCode = await storage.getGeneratedCodeByProject(req.params.id);
+      const processingResults = await storage.getProcessingResultsByProject(req.params.id);
+      const insights = await storage.getAiInsightsByProject(req.params.id);
+
+      const zip = new JSZip();
+
+      // Add generated code files
+      for (const code of generatedCode) {
+        zip.file(code.filePath, code.content);
+      }
+
+      // Add README
+      const readme = `# ${project.name}
+
+${project.description || 'Generated by Legacy - Smart App Assembly Line'}
+
+## Project Stats
+- Files Processed: ${project.filesProcessed}
+- Code Lines Analyzed: ${project.codeLinesAnalyzed}
+- Patterns Unified: ${project.patternsUnified}
+- Books Referenced: ${project.booksReferenced}
+
+## Processing Mode
+${project.processingMode}
+
+Generated on: ${new Date().toISOString()}
+`;
+      zip.file("README.md", readme);
+
+      // Add reports
+      const reportsFolder = zip.folder("reports");
+      if (reportsFolder) {
+        reportsFolder.file("processing-results.json", JSON.stringify(processingResults, null, 2));
+        reportsFolder.file("ai-insights.json", JSON.stringify(insights, null, 2));
+      }
+
+      const zipBlob = await zip.generateAsync({ type: "base64" });
+      const downloadUrl = `data:application/zip;base64,${zipBlob}`;
+
+      res.json({ downloadUrl });
+    } catch (error) {
+      console.error("Error creating download:", error);
+      res.status(500).json({ error: "Failed to create download" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}

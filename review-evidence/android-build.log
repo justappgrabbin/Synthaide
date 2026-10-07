@@ -1,0 +1,34 @@
+
+> world.synthia.acode@1.0.0 build
+> sh utils/scripts/build.sh paid dev apk
+
+Building APK file...
+type : apk
+Rspack compiled successfully in 7.88 s
+[32mcopied: ic_launcher_background.xml[0m
+[32mcopied: ic_launcher_foreground.xml[0m
+[32mcopied: ic_launcher.xml[0m
+[32mcopied: ic_launcher_round.xml[0m
+[32mcopied: ic_launcher.webp[0m
+[32mcopied: ic_launcher_round.webp[0m
+[32mcopied: ic_launcher.webp[0m
+[32mcopied: ic_launcher_round.webp[0m
+[32mcopied: ic_launcher.webp[0m
+[32mcopied: ic_launcher_round.webp[0m
+[32mcopied: ic_launcher.webp[0m
+[32mcopied: ic_launcher_round.webp[0m
+[32mcopied: ic_launcher.webp[0m
+[32mcopied: ic_launcher_round.webp[0m
+[32mcopied: colors.xml[0m
+[32mcopied: ic_launcher_background.xml[0m
+[32mcopied: themes.xml[0m
+[32mcopied: network_security_config.xml[0m
+[Cordova Hook] ✅ Legacy JNI packaging already enabled, skipping
+[Cordova Hook] ✅ Static context already enabled, skipping
+[Cordova Hook] ✅ realme splash workaround already enabled, skipping
+[Cordova Hook] ✅ Patched targetSdkVersion to cordovaConfig.SDK_VERSION
+Checking Java JDK and Android SDK versions
+ANDROID_HOME=undefined (recommended setting)
+ANDROID_SDK_ROOT=undefined (DEPRECATED)
+Failed to find 'ANDROID_HOME' environment variable. Try setting it manually.
+Failed to find 'android' command in your 'PATH'. Try update your 'PATH' to include path to valid SDK directory.

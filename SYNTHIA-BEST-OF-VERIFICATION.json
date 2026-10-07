@@ -1,0 +1,27 @@
+{
+  "focusedBestOfTest": "PASS",
+  "fullSynthiaCompleteSuite": "PASS",
+  "releaseAudit": "PASS",
+  "shippedBundleSyntax": "PASS",
+  "talkSmokeTest": {
+    "status": "PASS",
+    "returnedText": true,
+    "runtimeSummary": "Resolved through composition:local-resolution with exploit search.",
+    "addressPresent": true,
+    "path": [
+      "semantic-mesh",
+      "recognizer",
+      "micro-state-space",
+      "composition-predictor",
+      "puct",
+      "task-assignment",
+      "score",
+      "learn"
+    ]
+  },
+  "uiPreservation": {
+    "originalWhoWhatAxesPresent": true,
+    "stateSpaceSettingsLinkPresent": true,
+    "homeStillUsesExistingProcessPath": true
+  }
+}

@@ -1,0 +1,291 @@
+import type {
+  Brick,
+  SimCharacter,
+  ConsciousnessProfile,
+  BuildingAction,
+  FeatureInstance,
+  WaveState,
+  ResonanceField
+} from '@shared/schema';
+
+/**
+ * CONSCIOUSNESS ORCHESTRATOR
+ * 
+ * Connects all 5 systems into one unified architecture:
+ * 
+ * LegacyBuild → Sims → GameEngineX → Unity → SynthUniverse
+ * 
+ * THE FLOW:
+ * 1. Load bricks (components) from LegacyBuild
+ * 2. Import Sims characters with traits/skills
+ * 3. Calculate consciousness profiles (gates, waves, coherence)
+ * 4. Visualize agents building in Unity 3D space
+ * 5. Generate real functional features in SynthUniverse
+ */
+
+// ═══════════════════════════════════════════════════════════════════
+// SYSTEM 1: LegacyBuild → Brick Catalog
+// ═══════════════════════════════════════════════════════════════════
+
+const DEMO_APP_ID = 'demo-legacy-app';
+
+export function loadBricksFromLegacy(): Brick[] {
+  // In reality, this would parse actual code files from uploaded apps
+  // For now, return example bricks
+  return [
+    {
+      id: 'brick_dashboard',
+      sourceAppId: DEMO_APP_ID,
+      name: 'DashboardLayout',
+      type: 'component',
+      code: 'export default function Dashboard() { ... }',
+      dependencies: ['react', '@tanstack/react-query'],
+      gateResonance: [2, 20],
+      complexity: 5,
+      purpose: 'Main dashboard page layout',
+    },
+    {
+      id: 'brick_profile',
+      sourceAppId: DEMO_APP_ID,
+      name: 'UserProfile',
+      type: 'component',
+      code: 'export default function UserProfile() { ... }',
+      dependencies: ['react'],
+      gateResonance: [1, 13],
+      complexity: 8,
+      purpose: 'User profile display component',
+    },
+    {
+      id: 'brick_table',
+      sourceAppId: DEMO_APP_ID,
+      name: 'DataTable',
+      type: 'component',
+      code: 'export default function DataTable() { ... }',
+      dependencies: ['react', 'lucide-react'],
+      gateResonance: [3, 62],
+      complexity: 12,
+      purpose: 'Sortable data table component',
+    },
+  ];
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SYSTEM 2: SimsConverter → Character Data
+// ═══════════════════════════════════════════════════════════════════
+
+const DEMO_SIMS_UPLOAD_ID = 'demo-sims-upload';
+
+export function importSimsCharacters(): SimCharacter[] {
+  // In reality, this would parse uploaded .sims files
+  return [
+    {
+      id: 'sim_bella',
+      sourceUploadId: DEMO_SIMS_UPLOAD_ID,
+      name: 'Bella Goth',
+      traits: ['creative', 'family_oriented', 'romantic'],
+      skills: { creativity: 8, logic: 5, charisma: 7 },
+    },
+    {
+      id: 'sim_mortimer',
+      sourceUploadId: DEMO_SIMS_UPLOAD_ID,
+      name: 'Mortimer Goth',
+      traits: ['genius', 'bookworm', 'ambitious'],
+      skills: { logic: 10, creativity: 6, charisma: 4 },
+    },
+    {
+      id: 'sim_don',
+      sourceUploadId: DEMO_SIMS_UPLOAD_ID,
+      name: 'Don Lothario',
+      traits: ['romantic', 'outgoing', 'self_assured'],
+      skills: { charisma: 9, fitness: 7, creativity: 5 },
+    },
+  ];
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SYSTEM 3: GameEngineX → Consciousness Profile
+// ═══════════════════════════════════════════════════════════════════
+
+function calculateGatesFromTraits(traits: string[]): number[] {
+  const gateMap: Record<string, number[]> = {
+    creative: [1, 8, 22],
+    genius: [47, 24, 4],
+    romantic: [6, 37, 40],
+    family_oriented: [25, 46, 59],
+    bookworm: [63, 4, 11],
+    ambitious: [54, 32, 34],
+    outgoing: [12, 31, 7],
+    self_assured: [1, 13, 10],
+  };
+  
+  const gates = new Set<number>();
+  traits.forEach(trait => {
+    const traitGates = gateMap[trait] || [];
+    traitGates.forEach(g => gates.add(g));
+  });
+  
+  return Array.from(gates).sort((a, b) => a - b);
+}
+
+function calculateWaveState(skill: number): WaveState {
+  return {
+    frequency: skill / 10,
+    amplitude: skill * 0.1,
+    phase: Math.random() * Math.PI * 2,
+  };
+}
+
+function calculateResonanceFields(skills: Record<string, number>): Record<string, ResonanceField> {
+  const fields: Record<string, ResonanceField> = {};
+  
+  Object.entries(skills).forEach(([type, value]) => {
+    fields[type] = {
+      type,
+      strength: value / 10,
+      coherence: 0.7 + (value / 100) * 0.3,
+    };
+  });
+  
+  return fields;
+}
+
+export function calculateConsciousnessProfile(sim: SimCharacter): ConsciousnessProfile {
+  const gates = calculateGatesFromTraits(sim.traits);
+  const fields = calculateResonanceFields(sim.skills);
+  
+  // Calculate overall coherence from skills
+  const avgSkill = Object.values(sim.skills).reduce((a, b) => a + b, 0) / Object.values(sim.skills).length;
+  const coherence = 0.6 + (avgSkill / 10) * 0.4;
+  
+  return {
+    id: `profile_${sim.id}`,
+    agentId: sim.id,
+    simCharacterId: sim.id,
+    fields,
+    gates,
+    waveState: {
+      action: calculateWaveState(sim.skills.fitness || 5),
+      thought: calculateWaveState(sim.skills.logic || 5),
+      feeling: calculateWaveState(sim.skills.creativity || 5),
+    },
+    coherence,
+    calculatedAt: Date.now(),
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SYSTEM 4: Unity → Building Action
+// ═══════════════════════════════════════════════════════════════════
+
+export function createBuildingAction(
+  profile: ConsciousnessProfile,
+  bricks: Brick[],
+  featureName: string
+): BuildingAction {
+  // Agent's consciousness determines what they build and how
+  const buildingTypes: Array<'house' | 'apartment' | 'store' | 'office'> = ['house', 'apartment', 'store', 'office'];
+  const buildingType = buildingTypes[Math.floor(Math.random() * buildingTypes.length)];
+  
+  // Select bricks based on gate resonance match
+  const selectedBricks = bricks.filter(brick => {
+    return brick.gateResonance.some(gate => profile.gates.includes(gate));
+  });
+  
+  return {
+    agentId: profile.agentId,
+    buildingType,
+    position: {
+      x: Math.random() * 100,
+      y: 0,
+      z: Math.random() * 100,
+    },
+    targetFeature: featureName,
+    bricksUsed: selectedBricks.map(b => b.id),
+    progress: 0,
+    status: 'planning',
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SYSTEM 5: SynthUniverse → Feature Instance
+// ═══════════════════════════════════════════════════════════════════
+
+export function generateFeatureInstance(
+  action: BuildingAction,
+  profile: ConsciousnessProfile,
+  bricks: Brick[]
+): FeatureInstance {
+  const usedBricks = bricks.filter(b => action.bricksUsed.includes(b.id));
+  
+  return {
+    id: `feature_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    route: action.targetFeature,
+    components: usedBricks,
+    builtBy: action.agentId,
+    consciousnessSignature: {
+      gates: profile.gates,
+      coherence: profile.coherence,
+      buildDate: Date.now(),
+    },
+    status: 'draft',
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ORCHESTRATOR: Connect All Systems
+// ═══════════════════════════════════════════════════════════════════
+
+export interface OrchestrationResult {
+  bricks: Brick[];
+  sims: SimCharacter[];
+  profiles: ConsciousnessProfile[];
+  actions: BuildingAction[];
+  features: FeatureInstance[];
+}
+
+export async function runFullOrchestration(): Promise<OrchestrationResult> {
+  console.log('🌌 Starting Consciousness Orchestration...');
+  
+  // STEP 1: Load bricks from LegacyBuild
+  console.log('📦 SYSTEM 1: Loading bricks from LegacyBuild...');
+  const bricks = loadBricksFromLegacy();
+  console.log(`Loaded ${bricks.length} bricks`);
+  
+  // STEP 2: Import Sims characters
+  console.log('👥 SYSTEM 2: Importing Sims characters...');
+  const sims = importSimsCharacters();
+  console.log(`Imported ${sims.length} Sims`);
+  
+  // STEP 3: Calculate consciousness profiles
+  console.log('🧠 SYSTEM 3: Calculating consciousness profiles...');
+  const profiles = sims.map(sim => {
+    const profile = calculateConsciousnessProfile(sim);
+    console.log(`${sim.name} - Gates: ${profile.gates.join(', ')} | Coherence: ${profile.coherence.toFixed(2)}`);
+    return profile;
+  });
+  
+  // STEP 4: Create building actions
+  console.log('🏙️ SYSTEM 4: Creating building actions...');
+  const featureNames = ['/skills', '/tasks', '/marketplace'];
+  const actions = profiles.map((profile, i) => {
+    return createBuildingAction(profile, bricks, featureNames[i] || '/feature');
+  });
+  
+  // STEP 5: Generate features for SynthUniverse
+  console.log('✨ SYSTEM 5: Generating SynthUniverse features...');
+  const features = actions.map(action => {
+    const profile = profiles.find(p => p.agentId === action.agentId)!;
+    return generateFeatureInstance(action, profile, bricks);
+  });
+  
+  console.log('🎉 Orchestration complete!');
+  console.log(`Generated ${features.length} features with consciousness signatures`);
+  
+  return {
+    bricks,
+    sims,
+    profiles,
+    actions,
+    features,
+  };
+}

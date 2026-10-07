@@ -1,0 +1,58 @@
+import type { GeneGnome } from '@shared/schema';
+import { Hexagon, Dna } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+
+interface GeneGnomeCardProps {
+  geneGnome: GeneGnome;
+  compact?: boolean;
+}
+
+export function GeneGnomeCard({ geneGnome, compact = false }: GeneGnomeCardProps) {
+  if (compact) {
+    return (
+      <div 
+        className="relative p-3 bg-card/50 border border-cyan/30 rounded-md hover-elevate"
+        data-testid={`gnome-${geneGnome.id}`}
+      >
+        <div className="flex items-center gap-2">
+          <Hexagon className="w-4 h-4 text-cyan shrink-0" />
+          <span className="text-xs text-bio-green font-medium truncate">
+            {geneGnome.archetype}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Card 
+      className="p-4 bg-card/80 border-cyan/30 hover-elevate"
+      data-testid={`gnome-${geneGnome.id}`}
+    >
+      <div className="flex items-start gap-3">
+        <div className="w-12 h-12 rounded-md bg-cyan/10 border border-cyan/30 flex items-center justify-center shrink-0">
+          <Dna className="w-6 h-6 text-cyan" />
+        </div>
+        
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2">
+            <Hexagon className="w-4 h-4 text-bio-green" />
+            <h3 className="text-sm font-bold text-bio-green uppercase tracking-wider">
+              {geneGnome.archetype}
+            </h3>
+          </div>
+          
+          <p className="text-sm text-foreground leading-relaxed">
+            "{geneGnome.sentence}"
+          </p>
+
+          <div className="mt-3 flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">
+              Synthesized from {geneGnome.datababyIds.length} fragments
+            </span>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}

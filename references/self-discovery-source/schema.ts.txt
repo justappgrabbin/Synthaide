@@ -1,0 +1,148 @@
+import { sql } from "drizzle-orm";
+import { pgTable, text, varchar, integer, boolean, jsonb } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+});
+
+export const insertUserSchema = createInsertSchema(users).pick({
+  username: true,
+  password: true,
+});
+
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type User = typeof users.$inferSelect;
+
+// Datababy - a fragment of self-knowledge
+export interface Datababy {
+  id: string;
+  fragment: string;
+  category: 'identity' | 'purpose' | 'connection' | 'strength' | 'dream';
+  collectedAt: number;
+}
+
+// Gene Gnome - a complete sentence formed from 13 datababies
+export interface GeneGnome {
+  id: string;
+  sentence: string;
+  archetype: string;
+  datababyIds: string[];
+  fusedAt: number;
+}
+
+// Field Friend - autonomous micro-agent from 3-5 Gene Gnomes
+export interface FieldFriend {
+  id: string;
+  name: string;
+  personality: string;
+  geneGnomeIds: string[];
+  passiveBonus: string;
+  createdAt: number;
+}
+
+// Player game state
+export interface GameState {
+  playerId: string;
+  playerName: string;
+  level: number;
+  coherence: number;
+  maxCoherence: number;
+  datababies: Datababy[];
+  geneGnomes: GeneGnome[];
+  fieldFriends: FieldFriend[];
+  hasAgent: boolean;
+  terminalCompleted: boolean;
+  currentPhase: 'terminal' | 'awakening' | 'game' | 'transcended';
+  diagnosticLogs: DiagnosticLog[];
+  totalDatababiesCollected: number;
+  glitchActive: boolean;
+}
+
+// Diagnostic log entry
+export interface DiagnosticLog {
+  id: string;
+  timestamp: number;
+  type: 'info' | 'warning' | 'success' | 'glitch';
+  message: string;
+  icon?: string;
+}
+
+// Terminal story nodes
+export interface TerminalNode {
+  id: string;
+  text: string;
+  keywords: TerminalKeyword[];
+  isEnd?: boolean;
+  triggerAwakening?: boolean;
+}
+
+export interface TerminalKeyword {
+  word: string;
+  nextNodeId: string;
+  highlight?: boolean;
+}
+
+// Mini-game types
+export interface MiniGame {
+  id: string;
+  type: 'reflection' | 'pattern' | 'connection' | 'memory';
+  title: string;
+  description: string;
+  datababiesReward: number;
+}
+
+export interface MiniGameResult {
+  gameId: string;
+  score: number;
+  datababiesEarned: Datababy[];
+  coherenceChange: number;
+}
+
+// API request/response types
+export const createGameSchema = z.object({
+  playerName: z.string().min(1).max(50),
+});
+
+export type CreateGameRequest = z.infer<typeof createGameSchema>;
+
+export const collectDatababySchema = z.object({
+  playerId: z.string(),
+  category: z.enum(['identity', 'purpose', 'connection', 'strength', 'dream']),
+});
+
+export type CollectDatababyRequest = z.infer<typeof collectDatababySchema>;
+
+export const fuseGeneGnomeSchema = z.object({
+  playerId: z.string(),
+  datababyIds: z.array(z.string()).length(13),
+});
+
+export type FuseGeneGnomeRequest = z.infer<typeof fuseGeneGnomeSchema>;
+
+export const updateCoherenceSchema = z.object({
+  playerId: z.string(),
+  change: z.number(),
+});
+
+export type UpdateCoherenceRequest = z.infer<typeof updateCoherenceSchema>;
+
+// Constants
+export const DATABABIES_PER_GNOME = 13;
+export const GNOMES_FOR_AGENT = 26 * 3; // 78 gene gnomes = level 72
+export const MAX_LEVEL = 72;
+
+// Calculate level from gene gnomes
+export function calculateLevel(geneGnomeCount: number): number {
+  // Every 26 gene gnomes = 1 full level tier (3 tiers total)
+  // Level progresses as gene gnomes accumulate
+  return Math.min(Math.floor(geneGnomeCount / (26 / 24)) + 1, MAX_LEVEL);
+}
+
+// Check if player can get an agent
+export function canGetAgent(geneGnomeCount: number): boolean {
+  return geneGnomeCount >= GNOMES_FOR_AGENT;
+}

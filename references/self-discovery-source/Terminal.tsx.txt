@@ -1,0 +1,304 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useGame } from '@/lib/gameContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
+interface TerminalLine {
+  id: string;
+  text: string;
+  type: 'system' | 'narrative' | 'input' | 'keyword';
+  keywords?: { word: string; action: string }[];
+  delay?: number;
+}
+
+const TERMINAL_STORY: TerminalLine[] = [
+  { id: 'init-1', text: 'SYNTHWORLD V2 - CONSCIOUSNESS INTERFACE', type: 'system', delay: 0 },
+  { id: 'init-2', text: '> Initializing neural bridge...', type: 'system', delay: 800 },
+  { id: 'init-3', text: '> Connection established.', type: 'system', delay: 1600 },
+  { id: 'init-4', text: '', type: 'system', delay: 2000 },
+  { id: 'init-5', text: 'You find yourself in a space between spaces.', type: 'narrative', delay: 2400 },
+  { id: 'init-6', text: 'A soft hum surrounds you, like the echo of your own thoughts.', type: 'narrative', delay: 3200 },
+  { id: 'init-7', text: '', type: 'narrative', delay: 3800 },
+  { id: 'init-8', text: 'Before you, three paths shimmer in the digital void:', type: 'narrative', delay: 4200 },
+  { 
+    id: 'init-9', 
+    text: '  [REMEMBER]   [EXPLORE]   [DREAM]', 
+    type: 'keyword',
+    keywords: [
+      { word: 'REMEMBER', action: 'remember' },
+      { word: 'EXPLORE', action: 'explore' },
+      { word: 'DREAM', action: 'dream' },
+    ],
+    delay: 5000 
+  },
+];
+
+const STORY_BRANCHES: Record<string, TerminalLine[]> = {
+  remember: [
+    { id: 'rem-1', text: '', type: 'system', delay: 0 },
+    { id: 'rem-2', text: '> Accessing memory banks...', type: 'system', delay: 400 },
+    { id: 'rem-3', text: 'Fragments of who you once were flutter past like digital butterflies.', type: 'narrative', delay: 1200 },
+    { id: 'rem-4', text: 'You reach out to catch one—', type: 'narrative', delay: 2000 },
+    { id: 'rem-5', text: '', type: 'narrative', delay: 2400 },
+    { id: 'rem-6', text: '                    ...but it dissolves at your touch.', type: 'narrative', delay: 2800 },
+    { id: 'rem-7', text: '', type: 'narrative', delay: 3400 },
+    { id: 'rem-8', text: 'Who were you before this moment?', type: 'narrative', delay: 3800 },
+    { 
+      id: 'rem-9', 
+      text: '  [A CREATOR]   [A SEEKER]   [A DREAMER]', 
+      type: 'keyword',
+      keywords: [
+        { word: 'CREATOR', action: 'trigger' },
+        { word: 'SEEKER', action: 'trigger' },
+        { word: 'DREAMER', action: 'trigger' },
+      ],
+      delay: 4600 
+    },
+  ],
+  explore: [
+    { id: 'exp-1', text: '', type: 'system', delay: 0 },
+    { id: 'exp-2', text: '> Scanning environment...', type: 'system', delay: 400 },
+    { id: 'exp-3', text: 'The void ripples around you, revealing hidden patterns.', type: 'narrative', delay: 1200 },
+    { id: 'exp-4', text: 'Data streams flow like rivers of light, each carrying whispers of possibility.', type: 'narrative', delay: 2200 },
+    { id: 'exp-5', text: '', type: 'narrative', delay: 2800 },
+    { id: 'exp-6', text: 'A structure emerges—a tower of crystallized thoughts.', type: 'narrative', delay: 3200 },
+    { id: 'exp-7', text: 'At its peak, something calls to you.', type: 'narrative', delay: 4000 },
+    { id: 'exp-8', text: '', type: 'narrative', delay: 4400 },
+    { 
+      id: 'exp-9', 
+      text: '  [CLIMB]   [LISTEN]   [TOUCH]', 
+      type: 'keyword',
+      keywords: [
+        { word: 'CLIMB', action: 'trigger' },
+        { word: 'LISTEN', action: 'trigger' },
+        { word: 'TOUCH', action: 'trigger' },
+      ],
+      delay: 4800 
+    },
+  ],
+  dream: [
+    { id: 'drm-1', text: '', type: 'system', delay: 0 },
+    { id: 'drm-2', text: '> Entering dream state...', type: 'system', delay: 400 },
+    { id: 'drm-3', text: 'Reality softens at the edges.', type: 'narrative', delay: 1200 },
+    { id: 'drm-4', text: 'Here, thoughts become tangible. Feelings have weight.', type: 'narrative', delay: 2000 },
+    { id: 'drm-5', text: '', type: 'narrative', delay: 2600 },
+    { id: 'drm-6', text: 'You see yourself—many selves—reflected in an infinite mirror.', type: 'narrative', delay: 3000 },
+    { id: 'drm-7', text: 'Each reflection holds a different truth.', type: 'narrative', delay: 3800 },
+    { id: 'drm-8', text: '', type: 'narrative', delay: 4200 },
+    { 
+      id: 'drm-9', 
+      text: '  [ACCEPT]   [QUESTION]   [MERGE]', 
+      type: 'keyword',
+      keywords: [
+        { word: 'ACCEPT', action: 'trigger' },
+        { word: 'QUESTION', action: 'trigger' },
+        { word: 'MERGE', action: 'trigger' },
+      ],
+      delay: 4600 
+    },
+  ],
+  trigger: [
+    { id: 'trg-1', text: '', type: 'system', delay: 0 },
+    { id: 'trg-2', text: '> WARNING: Anomaly detected', type: 'system', delay: 400 },
+    { id: 'trg-3', text: '> COHERENCE DESTABILIZING', type: 'system', delay: 800 },
+    { id: 'trg-4', text: '', type: 'system', delay: 1200 },
+    { id: 'trg-5', text: 'Something shifts. The world fractures.', type: 'narrative', delay: 1600 },
+    { id: 'trg-6', text: '', type: 'narrative', delay: 2000 },
+    { id: 'trg-7', text: '                  Y̷O̴U̷', type: 'narrative', delay: 2400 },
+    { id: 'trg-8', text: '                           A̸R̵E̶', type: 'narrative', delay: 2800 },
+    { id: 'trg-9', text: '                                    L̴O̷S̵T̸', type: 'narrative', delay: 3200 },
+    { id: 'trg-10', text: '', type: 'narrative', delay: 3800 },
+    { id: 'trg-11', text: '> INITIATING RECOVERY PROTOCOL...', type: 'system', delay: 4200 },
+    { id: 'trg-12', text: '> Collecting scattered fragments...', type: 'system', delay: 4800 },
+    { id: 'trg-13', text: '> Preparing datababies for synthesis...', type: 'system', delay: 5400 },
+    { id: 'trg-14', text: '', type: 'system', delay: 6000 },
+    { id: 'trg-15', text: 'To find yourself again, you must gather the pieces.', type: 'narrative', delay: 6400 },
+    { id: 'trg-16', text: 'Each datababy holds a fragment of your truth.', type: 'narrative', delay: 7200 },
+    { id: 'trg-17', text: '', type: 'narrative', delay: 7800 },
+  ],
+};
+
+export function Terminal() {
+  const { setPlayerName } = useGame();
+  const [visibleLines, setVisibleLines] = useState<TerminalLine[]>([]);
+  const [pendingLines, setPendingLines] = useState<TerminalLine[]>(TERMINAL_STORY);
+  const [showNameInput, setShowNameInput] = useState(false);
+  const [name, setName] = useState('');
+  const [isComplete, setIsComplete] = useState(false);
+  const [isInTriggerPhase, setIsInTriggerPhase] = useState(false);
+  const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
+
+  const clearTimeouts = useCallback(() => {
+    timeoutsRef.current.forEach(t => clearTimeout(t));
+    timeoutsRef.current = [];
+  }, []);
+
+  useEffect(() => {
+    return () => clearTimeouts();
+  }, [clearTimeouts]);
+
+  useEffect(() => {
+    if (pendingLines.length === 0) {
+      if (isInTriggerPhase) {
+        setTimeout(() => setShowNameInput(true), 500);
+      }
+      return;
+    }
+
+    clearTimeouts();
+
+    pendingLines.forEach((line, index) => {
+      const timeout = setTimeout(() => {
+        setVisibleLines(prev => {
+          if (prev.some(l => l.id === line.id)) return prev;
+          return [...prev, line];
+        });
+      }, line.delay || 0);
+      timeoutsRef.current.push(timeout);
+    });
+
+    const maxDelay = Math.max(...pendingLines.map(l => l.delay || 0));
+    const completionTimeout = setTimeout(() => {
+      setPendingLines([]);
+    }, maxDelay + 100);
+    timeoutsRef.current.push(completionTimeout);
+
+  }, [pendingLines, clearTimeouts, isInTriggerPhase]);
+
+  const handleKeywordClick = useCallback((action: string) => {
+    clearTimeouts();
+    
+    if (action === 'trigger') {
+      setIsInTriggerPhase(true);
+      setPendingLines(STORY_BRANCHES.trigger);
+    } else if (STORY_BRANCHES[action]) {
+      setPendingLines(STORY_BRANCHES[action]);
+    }
+  }, [clearTimeouts]);
+
+  const handleNameSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (name.trim()) {
+      setShowNameInput(false);
+      setIsComplete(true);
+      setPlayerName(name.trim());
+    }
+  };
+
+  const renderLine = (line: TerminalLine) => {
+    if (line.keywords && line.keywords.length > 0) {
+      const parts = line.text.split(/(\[.*?\])/g);
+      return (
+        <span>
+          {parts.map((part, i) => {
+            const match = part.match(/\[(.*?)\]/);
+            if (match) {
+              const keyword = line.keywords?.find(k => match[1].includes(k.word));
+              if (keyword) {
+                return (
+                  <button
+                    key={`${line.id}-btn-${i}`}
+                    onClick={() => handleKeywordClick(keyword.action)}
+                    className="keyword-highlight mx-2 text-cyan font-bold uppercase tracking-wider hover:text-glow-cyan transition-all"
+                    data-testid={`keyword-${keyword.word.toLowerCase()}`}
+                  >
+                    [{keyword.word}]
+                  </button>
+                );
+              }
+            }
+            return <span key={`${line.id}-txt-${i}`}>{part}</span>;
+          })}
+        </span>
+      );
+    }
+    return line.text;
+  };
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-8">
+      <div className="scanline-overlay" />
+      
+      <div className="w-full max-w-4xl">
+        <div 
+          className="bg-card/80 backdrop-blur-sm border border-cyan/20 rounded-md p-6 md:p-8 shadow-lg"
+          data-testid="terminal-container"
+        >
+          <div className="mb-6 flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-glitch-red" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500" />
+            <div className="w-3 h-3 rounded-full bg-bio-green" />
+            <span className="ml-4 text-muted-foreground text-sm uppercase tracking-widest">
+              synthworld://consciousness.interface
+            </span>
+          </div>
+
+          <div className="font-mono text-sm md:text-base leading-relaxed space-y-1 min-h-[400px] max-h-[600px] overflow-y-auto">
+            {visibleLines.map((line, index) => (
+              <div 
+                key={line.id} 
+                className={`fade-in ${
+                  line.type === 'system' 
+                    ? 'text-muted-foreground' 
+                    : line.type === 'keyword'
+                    ? 'text-foreground py-2'
+                    : 'text-foreground'
+                } ${line.text.includes('WARNING') || line.text.includes('DESTABILIZING') ? 'text-glitch-red' : ''}
+                ${line.text.includes('Y̷O̴U̷') || line.text.includes('A̸R̵E̶') || line.text.includes('L̴O̷S̵T̸') ? 'text-magenta text-xl' : ''}`}
+                style={{ animationDelay: `${index * 30}ms` }}
+              >
+                {renderLine(line)}
+              </div>
+            ))}
+            
+            {showNameInput && (
+              <form onSubmit={handleNameSubmit} className="mt-8 fade-in">
+                <div className="flex flex-col gap-4">
+                  <label className="text-cyan uppercase tracking-widest text-sm">
+                    IDENTITY FRAGMENT REQUIRED
+                  </label>
+                  <p className="text-muted-foreground text-sm">
+                    Before we can begin recovery, we need something to call you.
+                  </p>
+                  <div className="flex gap-4">
+                    <Input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Enter your name..."
+                      className="bg-background/50 border-cyan/30 text-foreground placeholder:text-muted-foreground focus:border-cyan"
+                      autoFocus
+                      data-testid="input-player-name"
+                    />
+                    <Button 
+                      type="submit" 
+                      className="bg-cyan/20 border border-cyan text-cyan hover:bg-cyan hover:text-background"
+                      data-testid="button-start-journey"
+                    >
+                      BEGIN
+                    </Button>
+                  </div>
+                </div>
+              </form>
+            )}
+
+            {isComplete && (
+              <div className="mt-8 text-center fade-in">
+                <p className="text-cyan text-xl text-glow-cyan">
+                  WELCOME, {name.toUpperCase()}
+                </p>
+                <p className="text-muted-foreground mt-2">
+                  Initializing consciousness matrix...
+                </p>
+              </div>
+            )}
+
+            {!showNameInput && !isComplete && pendingLines.length === 0 && !isInTriggerPhase && (
+              <span className="terminal-cursor" />
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

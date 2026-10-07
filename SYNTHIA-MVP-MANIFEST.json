@@ -1,0 +1,106 @@
+{
+  "name": "Synthia OS Acode MVP Synth Integration",
+  "host": "Synthia-OS-Acode-Overhaul-v1.0.0-build-ready.zip",
+  "integrated": [
+    {
+      "source": "ato-core-trace-firing.zip",
+      "destination": "src/synthia/ato-core",
+      "role": "native ATO core, trace firing, VQ-VAE, semantic completion"
+    },
+    {
+      "source": "integrated-tool-factory-v1_4_0.zip",
+      "destination": "src/synthia/integrated-tool-factory",
+      "role": "eight-level deterministic tool synthesis and native ATO bridge"
+    },
+    {
+      "source": "sentence_realization.js",
+      "destination": "src/synthia/sentenceRealization.mjs",
+      "role": "meaning-first output realization, converted to ESM"
+    }
+  ],
+  "runtime": "src/synthia/synthesisRuntime.mjs",
+  "ui": "src/pages/welcome/welcome.js",
+  "mvp_command": "npm run test:synthia-mvp",
+  "verification": {
+    "mvp_tests": {
+      "passed": 5,
+      "failed": 0
+    },
+    "ato_core_donor_tests": {
+      "passed": 88,
+      "failed": 0
+    },
+    "full_acode_dependency_install": "not available in offline container",
+    "android_apk": "not built in this container"
+  },
+  "not_wholesale_merged": [
+    "Foundry-Glyphs.zip",
+    "SynthAI-Foundry-QQMOD-Replit-Drop.zip",
+    "Flask.zip"
+  ],
+  "mvp_gaps": [
+    "generated tool persistence across app restarts",
+    "user-facing save/export button for generated mjs files",
+    "full Foundry neural-cartridge manufacturing lifecycle",
+    "Android APK build"
+  ],
+  "modified_files": [
+    "SYNTHIA-OVERHAUL.md",
+    "package.json",
+    "src/pages/welcome/welcome.js",
+    "src/pages/welcome/welcome.scss",
+    "src/synthia/atoEngine.js",
+    "tests/synthia.test.js"
+  ],
+  "created_files": [
+    "SYNTHIA-MVP-INTEGRATION.md",
+    "SYNTHIA-MVP-MANIFEST.json",
+    "src/synthia/ato-core/README.md",
+    "src/synthia/ato-core/activation.mjs",
+    "src/synthia/ato-core/address-space.mjs",
+    "src/synthia/ato-core/anomata.mjs",
+    "src/synthia/ato-core/association.mjs",
+    "src/synthia/ato-core/automaton.mjs",
+    "src/synthia/ato-core/autonomy.mjs",
+    "src/synthia/ato-core/boolean-ato.mjs",
+    "src/synthia/ato-core/bootstrap.mjs",
+    "src/synthia/ato-core/browser-form.mjs",
+    "src/synthia/ato-core/companion.mjs",
+    "src/synthia/ato-core/computational-grammar-coder.mjs",
+    "src/synthia/ato-core/emergence.mjs",
+    "src/synthia/ato-core/expression.mjs",
+    "src/synthia/ato-core/families.mjs",
+    "src/synthia/ato-core/gate-address.mjs",
+    "src/synthia/ato-core/gate-data.mjs",
+    "src/synthia/ato-core/generative-emergence.mjs",
+    "src/synthia/ato-core/host.mjs",
+    "src/synthia/ato-core/iching.mjs",
+    "src/synthia/ato-core/index.mjs",
+    "src/synthia/ato-core/interpretations.mjs",
+    "src/synthia/ato-core/king-wen.mjs",
+    "src/synthia/ato-core/klein-iching.mjs",
+    "src/synthia/ato-core/klein-tools.mjs",
+    "src/synthia/ato-core/media-renderers.mjs",
+    "src/synthia/ato-core/organism.mjs",
+    "src/synthia/ato-core/promotion.mjs",
+    "src/synthia/ato-core/quality-transfer.mjs",
+    "src/synthia/ato-core/research-browser.mjs",
+    "src/synthia/ato-core/state-space-kernel.mjs",
+    "src/synthia/ato-core/success.mjs",
+    "src/synthia/ato-core/trace-firing.mjs",
+    "src/synthia/ato-core/tray.mjs",
+    "src/synthia/ato-core/workspace.mjs",
+    "src/synthia/integrated-tool-factory/DATASET_PROVENANCE.md",
+    "src/synthia/integrated-tool-factory/README.md",
+    "src/synthia/integrated-tool-factory/ato-native-bridge.mjs",
+    "src/synthia/integrated-tool-factory/integrated-tool-factory.mjs",
+    "src/synthia/sentenceRealization.mjs",
+    "src/synthia/synthesisRuntime.mjs",
+    "tests/synthia-mvp.node.mjs"
+  ],
+  "compatibility_notes": [
+    "The standalone uploaded vqvae.js defines base with six categories; the Acode/Synthia canonical macro base is five categories.",
+    "The integrated ATO trace-firing implementation uses a five-category base and is the runtime source of VQ-VAE + semantic completion.",
+    "Foundry/Flask donor applications were not wholesale merged into the Cordova host."
+  ]
+}

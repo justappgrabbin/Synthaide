@@ -1,0 +1,353 @@
+import { readdirSync, statSync } from 'fs';
+import { join } from 'path';
+import type { InsertModuleCatalog } from '@shared/schema';
+
+interface ModuleMetadata {
+  id: string;
+  name: string;
+  version: string;
+  description: string;
+  category: "game" | "tool" | "ai" | "astrology" | "cosmic" | "utility" | "dev" | "template";
+  author?: string;
+  tags: string[];
+  gates?: number[];
+  requiredFields?: ("zer" | "mind" | "body" | "heart" | "soul" | "spirit")[];
+}
+
+// Metadata mapping for known modules
+const moduleMetadataMap: Record<string, ModuleMetadata> = {
+  "GameEngineX": {
+    id: "gameenginex",
+    name: "GameEngineX",
+    version: "1.0.0",
+    description: "Comprehensive game engine with physics, rendering, and entity systems",
+    category: "game",
+    tags: ["game-dev", "engine", "3d", "physics"],
+    gates: [42, 61],
+  },
+  "GameAssetStudio": {
+    id: "gameassetstudio",
+    name: "Game Asset Studio",
+    version: "1.0.0",
+    description: "Asset creation and management studio for game development",
+    category: "game",
+    tags: ["assets", "game-dev", "editor"],
+    gates: [42],
+  },
+  "GAMEMAKER": {
+    id: "gamemaker",
+    name: "GameMaker",
+    version: "1.0.0",
+    description: "Visual game development environment with drag-and-drop",
+    category: "game",
+    tags: ["game-dev", "visual", "no-code"],
+    gates: [42, 34],
+  },
+  "AstroParser": {
+    id: "astroparser",
+    name: "Astro Parser",
+    version: "1.0.0",
+    description: "Parse and calculate astrological charts, transits, and aspects",
+    category: "astrology",
+    tags: ["astrology", "charts", "calculations"],
+    gates: [11, 26],
+    requiredFields: ["spirit", "soul"],
+  },
+  "HumanDesignReporter": {
+    id: "humandesignreporter",
+    name: "Human Design Reporter",
+    version: "1.0.0",
+    description: "Generate comprehensive Human Design bodygraph reports",
+    category: "astrology",
+    tags: ["human-design", "bodygraph", "reports"],
+    gates: [1, 2, 3, 7, 13, 25, 31, 51],
+    requiredFields: ["mind", "body", "heart", "soul"],
+  },
+  "ClickableTerminal": {
+    id: "clickableterminal",
+    name: "Clickable Terminal",
+    version: "1.0.0",
+    description: "Interactive terminal with clickable commands and suggestions",
+    category: "dev",
+    tags: ["terminal", "cli", "dev-tools"],
+    gates: [34],
+  },
+  "SQLMongoSwitch": {
+    id: "sqlmongoswitch",
+    name: "SQL/Mongo Switch",
+    version: "1.0.0",
+    description: "Seamlessly switch between SQL and MongoDB databases",
+    category: "dev",
+    tags: ["database", "sql", "mongodb", "dev-tools"],
+    gates: [34, 57],
+  },
+  "CodePilotBrowser": {
+    id: "codepilotbrowser",
+    name: "Code Pilot Browser",
+    version: "1.0.0",
+    description: "AI-powered code navigation and exploration tool",
+    category: "ai",
+    tags: ["ai", "code-nav", "dev-tools"],
+    gates: [24, 47],
+    requiredFields: ["mind"],
+  },
+  "CodeWeaverAI": {
+    id: "codeweaverai",
+    name: "CodeWeaver AI",
+    version: "1.0.0",
+    description: "AI assistant for code generation and refactoring",
+    category: "ai",
+    tags: ["ai", "codegen", "assistant"],
+    gates: [24, 47, 11],
+    requiredFields: ["mind", "spirit"],
+  },
+  "LlamaSite": {
+    id: "llamasite",
+    name: "LlamaSite",
+    version: "1.0.0",
+    description: "Build websites using Llama AI models",
+    category: "ai",
+    tags: ["ai", "llama", "web-dev"],
+    gates: [24, 42],
+  },
+  "CosmicBuilds": {
+    id: "cosmicbuilds",
+    name: "Cosmic Builds",
+    version: "1.0.0",
+    description: "Build projects aligned with cosmic timing and resonance",
+    category: "cosmic",
+    tags: ["cosmic", "timing", "resonance"],
+    gates: [2, 5, 14, 29],
+    requiredFields: ["spirit", "soul"],
+  },
+  "CosmicReplant": {
+    id: "cosmicreplant",
+    name: "Cosmic Replant",
+    version: "1.0.0",
+    description: "Regenerate and replant projects with cosmic alignment",
+    category: "cosmic",
+    tags: ["cosmic", "regeneration"],
+    gates: [2, 5],
+    requiredFields: ["soul"],
+  },
+  "GuaGanBrowser": {
+    id: "guaganbrowser",
+    name: "GuaGan Browser",
+    version: "1.0.0",
+    description: "Browse and generate images using GuaGAN AI",
+    category: "ai",
+    tags: ["ai", "gan", "images"],
+    gates: [42, 61],
+  },
+  "GuidePointer": {
+    id: "guidepointer",
+    name: "Guide Pointer",
+    version: "1.0.0",
+    description: "Interactive guide system with pointers and tooltips",
+    category: "utility",
+    tags: ["guides", "tooltips", "ui"],
+    gates: [16],
+  },
+  "LegacyBuild": {
+    id: "legacybuild",
+    name: "Legacy Build",
+    version: "1.0.0",
+    description: "Support for legacy build systems and compatibility layers",
+    category: "dev",
+    tags: ["legacy", "build", "compatibility"],
+    gates: [34],
+  },
+  "ZipDepotViewer": {
+    id: "zipdepotviewer",
+    name: "Zip Depot Viewer",
+    version: "1.0.0",
+    description: "View and manage ZIP file contents without extraction",
+    category: "utility",
+    tags: ["zip", "archive", "viewer"],
+    gates: [34],
+  },
+  "SimsConverterStudio": {
+    id: "simsconverterstudio",
+    name: "Sims Converter Studio",
+    version: "1.0.0",
+    description: "Convert and manage Sims game files and assets",
+    category: "game",
+    tags: ["sims", "converter", "game-assets"],
+    gates: [42],
+  },
+  "BudgetBuddy": {
+    id: "budgetbuddy",
+    name: "Budget Buddy",
+    version: "2.0.0",
+    description: "Personal finance and budgeting application",
+    category: "utility",
+    tags: ["finance", "budgeting", "money"],
+    gates: [34, 45],
+  },
+  "EmporiumNode": {
+    id: "emporiumnode",
+    name: "Emporium Node",
+    version: "1.0.0",
+    description: "E-commerce platform with inventory management",
+    category: "utility",
+    tags: ["ecommerce", "shopping", "inventory"],
+    gates: [34, 45],
+  },
+  "VirtualGameMaster": {
+    id: "virtualgamemaster",
+    name: "Virtual Game Master",
+    version: "1.0.0",
+    description: "AI-powered game master for tabletop RPGs",
+    category: "game",
+    tags: ["rpg", "game-master", "ai", "tabletop"],
+    gates: [42, 24],
+    requiredFields: ["mind", "spirit"],
+  },
+  "ZipVault": {
+    id: "zipvault",
+    name: "Zip Vault",
+    version: "1.0.0",
+    description: "Secure encrypted storage for ZIP archives",
+    category: "utility",
+    tags: ["security", "vault", "encryption"],
+    gates: [34, 57],
+  },
+  "EnergyNavigator": {
+    id: "energynavigator",
+    name: "Energy Navigator",
+    version: "1.0.0",
+    description: "Navigate and optimize personal energy flows",
+    category: "cosmic",
+    tags: ["energy", "optimization", "wellness"],
+    gates: [2, 5, 26, 29],
+    requiredFields: ["body", "heart", "soul"],
+  },
+  "GameGAN_code-master": {
+    id: "gamegan",
+    name: "GameGAN",
+    version: "1.0.0",
+    description: "Game environment generation using GANs",
+    category: "ai",
+    tags: ["gan", "game", "ai", "generation"],
+    gates: [42, 61],
+  },
+  "awesome-gamemaker": {
+    id: "awesome-gamemaker",
+    name: "Awesome GameMaker",
+    version: "1.0.0",
+    description: "Curated resources and tools for GameMaker",
+    category: "game",
+    tags: ["gamemaker", "resources", "tools"],
+    gates: [42],
+  },
+};
+
+// Helper to sanitize and validate filename
+function sanitizeFilename(filename: string): string | null {
+  // Reject filenames with path traversal attempts
+  if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+    console.warn(`Rejected potentially malicious filename: ${filename}`);
+    return null;
+  }
+  
+  // Only allow zip files
+  if (!filename.toLowerCase().endsWith('.zip')) {
+    return null;
+  }
+  
+  return filename;
+}
+
+// Helper to clean module name from filename
+function cleanModuleName(filename: string): string {
+  // Remove file extension
+  let name = filename.replace(/\.zip$/i, '');
+  // Remove timestamp pattern _xxxxxxxxxx
+  name = name.replace(/_\d{13}$/, '');
+  // Remove (Copy) (1) (2) etc
+  name = name.replace(/\s*\([^)]*\)$/g, '');
+  return name;
+}
+
+// Helper to get metadata for a module
+function getModuleMetadata(cleanName: string): ModuleMetadata | null {
+  // Try exact match first
+  if (moduleMetadataMap[cleanName]) {
+    return moduleMetadataMap[cleanName];
+  }
+  
+  // Try case-insensitive match
+  const lowerName = cleanName.toLowerCase();
+  for (const [key, value] of Object.entries(moduleMetadataMap)) {
+    if (key.toLowerCase() === lowerName) {
+      return value;
+    }
+  }
+  
+  // Generate default metadata
+  return {
+    id: cleanName.toLowerCase().replace(/[^a-z0-9]/g, ''),
+    name: cleanName,
+    version: "1.0.0",
+    description: `Module: ${cleanName}`,
+    category: "utility",
+    tags: ["module"],
+  };
+}
+
+export function ingestModulesFromDirectory(modulesPath: string): InsertModuleCatalog[] {
+  const catalogModules: InsertModuleCatalog[] = [];
+  const processedNames = new Set<string>();
+
+  try {
+    const files = readdirSync(modulesPath);
+
+    for (const file of files) {
+      if (!file.endsWith('.zip')) continue;
+
+      // Sanitize filename to prevent path traversal
+      const sanitizedFile = sanitizeFilename(file);
+      if (!sanitizedFile) {
+        console.warn(`Skipping invalid or potentially malicious file: ${file}`);
+        continue;
+      }
+
+      const cleanName = cleanModuleName(sanitizedFile);
+      
+      // Skip if we've already processed this module (deduplication)
+      if (processedNames.has(cleanName.toLowerCase())) {
+        continue;
+      }
+      
+      processedNames.add(cleanName.toLowerCase());
+
+      const filePath = join(modulesPath, sanitizedFile);
+      const stats = statSync(filePath);
+      const metadata = getModuleMetadata(cleanName);
+
+      if (!metadata) continue;
+
+      // Only allow files within the modules directory (security check)
+      const normalizedPath = join('/modules', sanitizedFile).replace(/\\/g, '/');
+
+      catalogModules.push({
+        id: metadata.id,
+        name: metadata.name,
+        version: metadata.version,
+        description: metadata.description,
+        category: metadata.category,
+        author: metadata.author,
+        tags: metadata.tags,
+        filePath: normalizedPath,
+        fileSize: stats.size,
+        gates: metadata.gates,
+        requiredFields: metadata.requiredFields,
+        installStatus: "available",
+      });
+    }
+  } catch (error) {
+    console.error('Error ingesting modules:', error);
+  }
+
+  return catalogModules;
+}

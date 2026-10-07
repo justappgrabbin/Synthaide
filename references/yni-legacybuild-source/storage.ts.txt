@@ -1,0 +1,361 @@
+import { randomUUID } from "crypto";
+import type {
+  Project, InsertProject,
+  File, InsertFile,
+  ProcessingResult, InsertProcessingResult,
+  UnusedFile, InsertUnusedFile,
+  GeneratedCode, InsertGeneratedCode,
+  AiInsight, InsertAiInsight,
+} from "@shared/schema";
+import { db } from "./db";
+import { projects, files, processingResults, unusedFiles, generatedCode, aiInsights } from "@shared/schema";
+import { eq, desc } from "drizzle-orm";
+
+export interface IStorage {
+  // Projects
+  getProject(id: string): Promise<Project | undefined>;
+  getAllProjects(): Promise<Project[]>;
+  createProject(project: InsertProject): Promise<Project>;
+  updateProject(id: string, updates: Partial<Project>): Promise<Project>;
+  deleteProject(id: string): Promise<void>;
+
+  // Files
+  getFile(id: string): Promise<File | undefined>;
+  getFilesByProject(projectId: string): Promise<File[]>;
+  createFile(file: InsertFile): Promise<File>;
+  updateFile(id: string, updates: Partial<File>): Promise<File>;
+  deleteFile(id: string): Promise<void>;
+
+  // Processing Results
+  getProcessingResult(id: string): Promise<ProcessingResult | undefined>;
+  getProcessingResultsByProject(projectId: string): Promise<ProcessingResult[]>;
+  createProcessingResult(result: InsertProcessingResult): Promise<ProcessingResult>;
+
+  // Unused Files
+  getUnusedFilesByProject(projectId: string): Promise<UnusedFile[]>;
+  createUnusedFile(unusedFile: InsertUnusedFile): Promise<UnusedFile>;
+
+  // Generated Code
+  getGeneratedCodeByProject(projectId: string): Promise<GeneratedCode[]>;
+  createGeneratedCode(code: InsertGeneratedCode): Promise<GeneratedCode>;
+  updateGeneratedCode(id: string, updates: Partial<GeneratedCode>): Promise<GeneratedCode>;
+
+  // AI Insights
+  getAiInsightsByProject(projectId: string): Promise<AiInsight[]>;
+  createAiInsight(insight: InsertAiInsight): Promise<AiInsight>;
+}
+
+export class MemStorage implements IStorage {
+  private projects: Map<string, Project> = new Map();
+  private files: Map<string, File> = new Map();
+  private processingResults: Map<string, ProcessingResult> = new Map();
+  private unusedFiles: Map<string, UnusedFile> = new Map();
+  private generatedCode: Map<string, GeneratedCode> = new Map();
+  private aiInsights: Map<string, AiInsight> = new Map();
+
+  // Projects
+  async getProject(id: string): Promise<Project | undefined> {
+    return this.projects.get(id);
+  }
+
+  async getAllProjects(): Promise<Project[]> {
+    return Array.from(this.projects.values());
+  }
+
+  async createProject(insertProject: InsertProject): Promise<Project> {
+    const id = randomUUID();
+    const project: Project = {
+      ...insertProject,
+      id,
+      description: insertProject.description ?? null,
+      processingMode: insertProject.processingMode ?? 'balanced',
+      aiCommentaryDepth: insertProject.aiCommentaryDepth ?? 3,
+      status: insertProject.status || 'uploading',
+      planningSummary: insertProject.planningSummary ?? null,
+      selectedMode: insertProject.selectedMode ?? null,
+      planStatus: insertProject.planStatus ?? 'pending',
+      executionStatus: insertProject.executionStatus ?? 'not_started',
+      gitTarget: insertProject.gitTarget ?? null,
+      filesProcessed: 0,
+      codeLinesAnalyzed: 0,
+      patternsUnified: 0,
+      booksReferenced: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.projects.set(id, project);
+    return project;
+  }
+
+  async updateProject(id: string, updates: Partial<Project>): Promise<Project> {
+    const project = this.projects.get(id);
+    if (!project) throw new Error('Project not found');
+    
+    const updated = { ...project, ...updates, updatedAt: new Date() };
+    this.projects.set(id, updated);
+    return updated;
+  }
+
+  async deleteProject(id: string): Promise<void> {
+    this.projects.delete(id);
+  }
+
+  // Files
+  async getFile(id: string): Promise<File | undefined> {
+    return this.files.get(id);
+  }
+
+  async getFilesByProject(projectId: string): Promise<File[]> {
+    return Array.from(this.files.values()).filter(f => f.projectId === projectId);
+  }
+
+  async createFile(insertFile: InsertFile): Promise<File> {
+    const id = randomUUID();
+    const file: File = {
+      ...insertFile,
+      id,
+      content: insertFile.content ?? null,
+      objectPath: insertFile.objectPath ?? null,
+      status: insertFile.status || 'pending',
+      uploadedAt: new Date(),
+    };
+    this.files.set(id, file);
+    return file;
+  }
+
+  async updateFile(id: string, updates: Partial<File>): Promise<File> {
+    const file = this.files.get(id);
+    if (!file) throw new Error('File not found');
+    
+    const updated = { ...file, ...updates };
+    this.files.set(id, updated);
+    return updated;
+  }
+
+  async deleteFile(id: string): Promise<void> {
+    this.files.delete(id);
+  }
+
+  // Processing Results
+  async getProcessingResult(id: string): Promise<ProcessingResult | undefined> {
+    return this.processingResults.get(id);
+  }
+
+  async getProcessingResultsByProject(projectId: string): Promise<ProcessingResult[]> {
+    return Array.from(this.processingResults.values())
+      .filter(r => r.projectId === projectId)
+      .sort((a, b) => a.processedAt.getTime() - b.processedAt.getTime());
+  }
+
+  async createProcessingResult(insertResult: InsertProcessingResult): Promise<ProcessingResult> {
+    const id = randomUUID();
+    const result: ProcessingResult = {
+      ...insertResult,
+      id,
+      fileId: insertResult.fileId ?? null,
+      result: insertResult.result,
+      processingTime: insertResult.processingTime ?? null,
+      processedAt: new Date(),
+    };
+    this.processingResults.set(id, result);
+    return result;
+  }
+
+  // Unused Files
+  async getUnusedFilesByProject(projectId: string): Promise<UnusedFile[]> {
+    return Array.from(this.unusedFiles.values()).filter(u => u.projectId === projectId);
+  }
+
+  async createUnusedFile(insertUnusedFile: InsertUnusedFile): Promise<UnusedFile> {
+    const id = randomUUID();
+    const unusedFile: UnusedFile = {
+      ...insertUnusedFile,
+      id,
+      suggestedAction: insertUnusedFile.suggestedAction ?? null,
+      createdAt: new Date(),
+    };
+    this.unusedFiles.set(id, unusedFile);
+    return unusedFile;
+  }
+
+  // Generated Code
+  async getGeneratedCodeByProject(projectId: string): Promise<GeneratedCode[]> {
+    return Array.from(this.generatedCode.values()).filter(g => g.projectId === projectId);
+  }
+
+  async createGeneratedCode(insertCode: InsertGeneratedCode): Promise<GeneratedCode> {
+    const id = randomUUID();
+    const code: GeneratedCode = {
+      ...insertCode,
+      id,
+      language: insertCode.language ?? null,
+      hasGaps: insertCode.hasGaps ?? false,
+      createdAt: new Date(),
+    };
+    this.generatedCode.set(id, code);
+    return code;
+  }
+
+  async updateGeneratedCode(id: string, updates: Partial<GeneratedCode>): Promise<GeneratedCode> {
+    const code = this.generatedCode.get(id);
+    if (!code) throw new Error('Generated code not found');
+    
+    const updated = { ...code, ...updates };
+    this.generatedCode.set(id, updated);
+    return updated;
+  }
+
+  // AI Insights
+  async getAiInsightsByProject(projectId: string): Promise<AiInsight[]> {
+    return Array.from(this.aiInsights.values()).filter(i => i.projectId === projectId);
+  }
+
+  async createAiInsight(insertInsight: InsertAiInsight): Promise<AiInsight> {
+    const id = randomUUID();
+    const insight: AiInsight = {
+      ...insertInsight,
+      id,
+      confidence: insertInsight.confidence ?? null,
+      createdAt: new Date(),
+    };
+    this.aiInsights.set(id, insight);
+    return insight;
+  }
+}
+
+export class DbStorage implements IStorage {
+  // Helper to strip undefined values from update payloads
+  private stripUndefined<T extends Record<string, any>>(obj: T): Partial<T> {
+    return Object.fromEntries(
+      Object.entries(obj).filter(([_, v]) => v !== undefined)
+    ) as Partial<T>;
+  }
+
+  // Projects
+  async getProject(id: string): Promise<Project | undefined> {
+    const result = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getAllProjects(): Promise<Project[]> {
+    return await db.select().from(projects).orderBy(desc(projects.createdAt));
+  }
+
+  async createProject(insertProject: InsertProject): Promise<Project> {
+    const result = await db.insert(projects).values(insertProject).returning();
+    if (!result[0]) throw new Error('Failed to create project');
+    return result[0];
+  }
+
+  async updateProject(id: string, updates: Partial<Project>): Promise<Project> {
+    const cleanUpdates = this.stripUndefined(updates);
+    const result = await db
+      .update(projects)
+      .set({ ...cleanUpdates, updatedAt: new Date() })
+      .where(eq(projects.id, id))
+      .returning();
+    if (!result[0]) throw new Error('Project not found');
+    return result[0];
+  }
+
+  async deleteProject(id: string): Promise<void> {
+    await db.delete(projects).where(eq(projects.id, id));
+  }
+
+  // Files
+  async getFile(id: string): Promise<File | undefined> {
+    const result = await db.select().from(files).where(eq(files.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getFilesByProject(projectId: string): Promise<File[]> {
+    return await db.select().from(files).where(eq(files.projectId, projectId)).orderBy(files.uploadedAt);
+  }
+
+  async createFile(insertFile: InsertFile): Promise<File> {
+    const result = await db.insert(files).values(insertFile).returning();
+    if (!result[0]) throw new Error('Failed to create file');
+    return result[0];
+  }
+
+  async updateFile(id: string, updates: Partial<File>): Promise<File> {
+    const cleanUpdates = this.stripUndefined(updates);
+    const result = await db
+      .update(files)
+      .set(cleanUpdates)
+      .where(eq(files.id, id))
+      .returning();
+    if (!result[0]) throw new Error('File not found');
+    return result[0];
+  }
+
+  async deleteFile(id: string): Promise<void> {
+    await db.delete(files).where(eq(files.id, id));
+  }
+
+  // Processing Results
+  async getProcessingResult(id: string): Promise<ProcessingResult | undefined> {
+    const result = await db.select().from(processingResults).where(eq(processingResults.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getProcessingResultsByProject(projectId: string): Promise<ProcessingResult[]> {
+    return await db
+      .select()
+      .from(processingResults)
+      .where(eq(processingResults.projectId, projectId))
+      .orderBy(processingResults.processedAt);
+  }
+
+  async createProcessingResult(insertResult: InsertProcessingResult): Promise<ProcessingResult> {
+    const result = await db.insert(processingResults).values(insertResult).returning();
+    if (!result[0]) throw new Error('Failed to create processing result');
+    return result[0];
+  }
+
+  // Unused Files
+  async getUnusedFilesByProject(projectId: string): Promise<UnusedFile[]> {
+    return await db.select().from(unusedFiles).where(eq(unusedFiles.projectId, projectId));
+  }
+
+  async createUnusedFile(insertUnusedFile: InsertUnusedFile): Promise<UnusedFile> {
+    const result = await db.insert(unusedFiles).values(insertUnusedFile).returning();
+    if (!result[0]) throw new Error('Failed to create unused file');
+    return result[0];
+  }
+
+  // Generated Code
+  async getGeneratedCodeByProject(projectId: string): Promise<GeneratedCode[]> {
+    return await db.select().from(generatedCode).where(eq(generatedCode.projectId, projectId));
+  }
+
+  async createGeneratedCode(insertCode: InsertGeneratedCode): Promise<GeneratedCode> {
+    const result = await db.insert(generatedCode).values(insertCode).returning();
+    if (!result[0]) throw new Error('Failed to create generated code');
+    return result[0];
+  }
+
+  async updateGeneratedCode(id: string, updates: Partial<GeneratedCode>): Promise<GeneratedCode> {
+    const cleanUpdates = this.stripUndefined(updates);
+    const result = await db
+      .update(generatedCode)
+      .set(cleanUpdates)
+      .where(eq(generatedCode.id, id))
+      .returning();
+    if (!result[0]) throw new Error('Generated code not found');
+    return result[0];
+  }
+
+  // AI Insights
+  async getAiInsightsByProject(projectId: string): Promise<AiInsight[]> {
+    return await db.select().from(aiInsights).where(eq(aiInsights.projectId, projectId));
+  }
+
+  async createAiInsight(insertInsight: InsertAiInsight): Promise<AiInsight> {
+    const result = await db.insert(aiInsights).values(insertInsight).returning();
+    if (!result[0]) throw new Error('Failed to create AI insight');
+    return result[0];
+  }
+}
+
+export const storage = new DbStorage();

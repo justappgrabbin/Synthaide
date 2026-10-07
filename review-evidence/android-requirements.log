@@ -1,0 +1,16 @@
+
+Requirements check results for android:
+Java JDK: not installed 
+Failed to run "javac -version", make sure that you have a JDK version 8 installed.
+You can get it from the following location:
+https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+Android SDK: not installed 
+Failed to find 'ANDROID_HOME' environment variable. Try setting it manually.
+Failed to find 'android' command in your 'PATH'. Try update your 'PATH' to include path to valid SDK directory.
+Android target: not installed 
+Command failed with ENOENT: avdmanager list target
+spawn avdmanager ENOENT
+Gradle: not installed 
+Could not find gradle wrapper within Android SDK. Could not find Android SDK directory.
+Might need to install Android SDK or set up 'ANDROID_HOME' env variable.
+Some of requirements check failed

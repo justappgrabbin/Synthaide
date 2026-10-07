@@ -1,0 +1,122 @@
+Using cordova-fetch for cordova-android@^15.1.0
+Adding android project...
+Creating Cordova project for the Android platform:
+	Path: platforms/android
+	Package: world.synthia.acode
+	Name: Synthia OS
+	Activity: MainActivity
+	Android Target SDK: android-36
+	Android Compile SDK: 36
+Subproject Path: CordovaLib
+Subproject Path: app
+Android project created with cordova-android@15.1.0
+Discovered plugin "cordova-clipboard". Adding it to the project
+Installing "cordova-clipboard" for android
+Discovered plugin "cordova-plugin-device". Adding it to the project
+/workspace/review/living-organism/platforms/android/CordovaLib/src/org/apache/cordova/engine/SystemWebView.java updated
+/workspace/review/living-organism/platforms/android/CordovaLib/src/org/apache/cordova/engine/SystemWebViewEngine.java updated
+/workspace/review/living-organism/platforms/android/CordovaLib/src/org/apache/cordova/CordovaWebViewEngine.java updated
+/workspace/review/living-organism/platforms/android/CordovaLib/src/org/apache/cordova/CordovaWebView.java updated
+/workspace/review/living-organism/platforms/android/CordovaLib/src/org/apache/cordova/CordovaWebViewImpl.java updated
+/workspace/review/living-organism/platforms/android/.flag_done updated
+Installing "cordova-plugin-device" for android
+Discovered plugin "cordova-plugin-file". Adding it to the project
+Installing "cordova-plugin-file" for android
+Subproject Path: CordovaLib
+Subproject Path: app
+
+The Android Persistent storage location now defaults to "Internal". Please check this plugin's README to see if your application needs any changes in its config.xml.
+
+If this is a new application no changes are required.
+
+If this is an update to an existing application that did not specify an "AndroidPersistentFileLocation" you may need to add:
+
+      "<preference name="AndroidPersistentFileLocation" value="Compatibility" />"
+
+to config.xml in order for the application to find previously stored files.
+        
+Discovered plugin "cordova-plugin-server". Adding it to the project
+Installing "cordova-plugin-server" for android
+Subproject Path: CordovaLib
+Subproject Path: app
+Discovered plugin "cordova-plugin-ftp". Adding it to the project
+Installing "cordova-plugin-ftp" for android
+Subproject Path: CordovaLib
+Subproject Path: app
+Discovered plugin "cordova-plugin-sdcard". Adding it to the project
+Installing "cordova-plugin-sdcard" for android
+Subproject Path: CordovaLib
+Subproject Path: app
+Discovered plugin "cordova-plugin-websocket". Adding it to the project
+Installing "cordova-plugin-websocket" for android
+Subproject Path: CordovaLib
+Subproject Path: app
+Discovered plugin "cordova-plugin-buildinfo". Adding it to the project
+Installing "cordova-plugin-buildinfo" for android
+Subproject Path: CordovaLib
+Subproject Path: app
+Discovered plugin "cordova-plugin-browser". Adding it to the project
+Installing "cordova-plugin-browser" for android
+Discovered plugin "cordova-plugin-sftp". Adding it to the project
+Installing "cordova-plugin-sftp" for android
+Subproject Path: CordovaLib
+Subproject Path: app
+Discovered plugin "com.foxdebug.acode.rk.exec.terminal". Adding it to the project
+Installing "com.foxdebug.acode.rk.exec.terminal" for android
+Subproject Path: CordovaLib
+Subproject Path: app
+Discovered plugin "com.foxdebug.acode.rk.plugin.plugincontext". Adding it to the project
+Installing "com.foxdebug.acode.rk.plugin.plugincontext" for android
+Discovered plugin "com.foxdebug.acode.rk.auth". Adding it to the project
+Installing "com.foxdebug.acode.rk.auth" for android
+Subproject Path: CordovaLib
+Subproject Path: app
+Discovered plugin "com.foxdebug.acode.rk.exec.proot". Adding it to the project
+Installing "com.foxdebug.acode.rk.exec.proot" for android
+Discovered plugin "cordova-plugin-iap". Adding it to the project
+Installing "cordova-plugin-iap" for android
+Subproject Path: CordovaLib
+Subproject Path: app
+Discovered plugin "com.foxdebug.acode.rk.customtabs". Adding it to the project
+Installing "com.foxdebug.acode.rk.customtabs" for android
+Subproject Path: CordovaLib
+Subproject Path: app
+Discovered plugin "cordova-plugin-system". Adding it to the project
+Installing "cordova-plugin-system" for android
+Subproject Path: CordovaLib
+Subproject Path: app
+Discovered plugin "cordova-plugin-crashhandler". Adding it to the project
+Installing "cordova-plugin-crashhandler" for android
+Discovered plugin "cordova-plugin-advanced-http". Adding it to the project
+Installing "cordova-plugin-advanced-http" for android
+Plugin dependency "cordova-plugin-file@8.1.3" already fetched, using that version.
+Dependent plugin "cordova-plugin-file" already installed on android.
+Discovered plugin "cordova-plugin-acode-webview". Adding it to the project
+Installing "cordova-plugin-acode-webview" for android
+[32mcopied: ic_launcher_background.xml[0m
+[32mcopied: ic_launcher_foreground.xml[0m
+[32mcopied: ic_launcher.xml[0m
+[32mcopied: ic_launcher_round.xml[0m
+[31mdeleted conflicting resource: ic_launcher.png[0m
+[32mcopied: ic_launcher.webp[0m
+[32mcopied: ic_launcher_round.webp[0m
+[31mdeleted conflicting resource: ic_launcher.png[0m
+[32mcopied: ic_launcher.webp[0m
+[32mcopied: ic_launcher_round.webp[0m
+[31mdeleted conflicting resource: ic_launcher.png[0m
+[32mcopied: ic_launcher.webp[0m
+[32mcopied: ic_launcher_round.webp[0m
+[31mdeleted conflicting resource: ic_launcher.png[0m
+[32mcopied: ic_launcher.webp[0m
+[32mcopied: ic_launcher_round.webp[0m
+[31mdeleted conflicting resource: ic_launcher.png[0m
+[32mcopied: ic_launcher.webp[0m
+[32mcopied: ic_launcher_round.webp[0m
+[32mcopied: colors.xml[0m
+[32mcopied: ic_launcher_background.xml[0m
+[32mcopied: themes.xml[0m
+[32mcopied: network_security_config.xml[0m
+[Cordova Hook] ✅ Enabled legacy JNI packaging
+[Cordova Hook] ✅ Enabled static context
+[Cordova Hook] ✅ Disabled splash fade on realme Android 13
+[Cordova Hook] ✅ Patched targetSdkVersion to cordovaConfig.SDK_VERSION

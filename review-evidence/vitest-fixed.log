@@ -1,0 +1,16 @@
+
+> world.synthia.acode@1.0.0 test
+> vitest run
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.js:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /workspace/review/living-organism
+
+
+ Test Files  49 passed (49)
+      Tests  330 passed (330)
+   Start at  08:07:53
+   Duration  19.47s (transform 2.83s, setup 0ms, import 5.76s, tests 2.47s, environment 3.54s)
+

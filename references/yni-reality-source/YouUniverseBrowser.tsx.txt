@@ -1,0 +1,2246 @@
+import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight, RotateCw, Plus, X, Search, Star, MoreVertical, History, Download, Bookmark, Settings, Share2, FileSearch, Languages, Monitor, Trash2, Code, FileCode, Bot, Gamepad2, LayoutTemplate, GitBranch, Upload, Terminal, Folder, File, ChevronDown, ChevronRight as ChevronRightIcon, Play, Palette, Box, Cpu, Home, Blocks, ThumbsUp, TrendingUp, Lock, Unlock, Eye, Sparkles, MessageCircle, Calendar, Brain, Zap, Archive, Package, Combine, Users, Heart, ArrowRight } from "lucide-react";
+import DevSystemPanel from "./DevSystemPanel";
+import DashboardContent from "./DashboardContent";
+import BashTerminal from "./BashTerminal";
+import AIChat from "./AIChat";
+import LLMTrainer from "./LLMTrainer";
+import GANTrainer from "./GANTrainer";
+import PlatformIndicator from "./PlatformIndicator";
+import SettingsModal from "./SettingsModal";
+import ModuleCatalog from "./ModuleCatalog";
+import { useToast } from "@/hooks/use-toast";
+import { useBrowserSettings } from "@/contexts/BrowserSettingsContext";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
+
+interface Tab {
+  id: string;
+  title: string;
+  url: string;
+}
+
+const themes = {
+  cosmic: { 
+    name: 'Cosmic Purple', 
+    color: 'hsl(270, 70%, 60%)',
+    vars: {
+      '--background': '270 70% 8%',
+      '--foreground': '270 15% 90%',
+      '--border': '270 40% 25%',
+      '--card': '270 60% 12%',
+      '--card-foreground': '270 15% 90%',
+      '--muted': '270 50% 18%',
+      '--muted-foreground': '270 10% 70%',
+      '--accent': '270 80% 28%',
+      '--accent-foreground': '270 25% 95%',
+      '--primary': '270 90% 65%',
+      '--primary-foreground': '270 90% 98%',
+    }
+  },
+  ocean: { 
+    name: 'Ocean Blue', 
+    color: 'hsl(200, 80%, 50%)',
+    vars: {
+      '--background': '200 70% 8%',
+      '--foreground': '200 15% 90%',
+      '--border': '200 50% 25%',
+      '--card': '200 60% 12%',
+      '--card-foreground': '200 15% 90%',
+      '--muted': '200 50% 18%',
+      '--muted-foreground': '200 10% 70%',
+      '--accent': '200 70% 28%',
+      '--accent-foreground': '200 25% 95%',
+      '--primary': '200 90% 55%',
+      '--primary-foreground': '200 90% 98%',
+    }
+  },
+  forest: { 
+    name: 'Forest Green', 
+    color: 'hsl(140, 60%, 50%)',
+    vars: {
+      '--background': '140 60% 8%',
+      '--foreground': '140 15% 90%',
+      '--border': '140 40% 25%',
+      '--card': '140 55% 12%',
+      '--card-foreground': '140 15% 90%',
+      '--muted': '140 45% 18%',
+      '--muted-foreground': '140 10% 70%',
+      '--accent': '140 60% 28%',
+      '--accent-foreground': '140 25% 95%',
+      '--primary': '140 80% 50%',
+      '--primary-foreground': '140 80% 98%',
+    }
+  },
+  sunset: { 
+    name: 'Sunset Orange', 
+    color: 'hsl(25, 90%, 55%)',
+    vars: {
+      '--background': '25 70% 8%',
+      '--foreground': '25 15% 90%',
+      '--border': '25 60% 25%',
+      '--card': '25 65% 12%',
+      '--card-foreground': '25 15% 90%',
+      '--muted': '25 55% 18%',
+      '--muted-foreground': '25 10% 70%',
+      '--accent': '25 75% 28%',
+      '--accent-foreground': '25 25% 95%',
+      '--primary': '25 95% 60%',
+      '--primary-foreground': '25 95% 98%',
+    }
+  },
+  rose: { 
+    name: 'Rose Pink', 
+    color: 'hsl(330, 70%, 60%)',
+    vars: {
+      '--background': '330 70% 8%',
+      '--foreground': '330 15% 90%',
+      '--border': '330 50% 25%',
+      '--card': '330 60% 12%',
+      '--card-foreground': '330 15% 90%',
+      '--muted': '330 50% 18%',
+      '--muted-foreground': '330 10% 70%',
+      '--accent': '330 70% 28%',
+      '--accent-foreground': '330 25% 95%',
+      '--primary': '330 85% 65%',
+      '--primary-foreground': '330 85% 98%',
+    }
+  },
+  cyber: { 
+    name: 'Cyber Cyan', 
+    color: 'hsl(180, 80%, 50%)',
+    vars: {
+      '--background': '180 60% 8%',
+      '--foreground': '180 15% 90%',
+      '--border': '180 50% 25%',
+      '--card': '180 55% 12%',
+      '--card-foreground': '180 15% 90%',
+      '--muted': '180 45% 18%',
+      '--muted-foreground': '180 10% 70%',
+      '--accent': '180 65% 28%',
+      '--accent-foreground': '180 25% 95%',
+      '--primary': '180 90% 55%',
+      '--primary-foreground': '180 90% 98%',
+    }
+  },
+};
+
+export default function YouUniverseBrowser() {
+  const { toast } = useToast();
+  const { setIsSettingsOpen } = useBrowserSettings();
+  const isMobile = useIsMobile();
+  const [tabs, setTabs] = useState<Tab[]>([
+    { id: '1', title: 'New Tab', url: '' }
+  ]);
+  const [activeTabId, setActiveTabId] = useState('1');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [developerMode, setDeveloperMode] = useState(false);
+  const [devActiveTab, setDevActiveTab] = useState<'ide' | 'agent' | 'game' | '3d' | 'templates' | 'git' | 'deploy' | 'system' | 'modules' | 'terminal' | 'chat' | 'llm-trainer' | 'gan-trainer' | 'workspaces' | 'resonance'>('ide');
+  const [systemPanel, setSystemPanel] = useState('console');
+  const [mobileIdeView, setMobileIdeView] = useState<'explorer' | 'code' | 'preview' | 'system'>('explorer');
+  const [moduleActiveTab, setModuleActiveTab] = useState<'proposals' | 'my-modules' | 'create' | 'upload'>('proposals');
+  const [uploadedModule, setUploadedModule] = useState<any>(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [addressBarValue, setAddressBarValue] = useState('');
+  const [selectedFile, setSelectedFile] = useState('index.html');
+  const [filesExpanded, setFilesExpanded] = useState(true);
+  const [currentTheme, setCurrentTheme] = useState<keyof typeof themes>('cyber');
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [show3DBuilder, setShow3DBuilder] = useState<'world' | 'vr' | null>(null);
+
+  // Agent Builder state
+  const [agentName, setAgentName] = useState('');
+  const [agentType, setAgentType] = useState('Personal Assistant');
+  const [agentPrompt, setAgentPrompt] = useState('');
+  const [fieldAlignment, setFieldAlignment] = useState<string[]>([]);
+
+  // Game Maker state
+  const [gameType, setGameType] = useState('');
+  const [gameTitle, setGameTitle] = useState('');
+  const [gameField, setGameField] = useState('None');
+
+  // Git state
+  const [gitRepo, setGitRepo] = useState('');
+  const [gitCommits, setGitCommits] = useState([{ message: 'Initial commit', time: '2h ago' }]);
+
+  // IDE state
+  const [codeContent, setCodeContent] = useState('');
+  const [codeRunning, setCodeRunning] = useState(false);
+
+  // Workspaces state
+  const [workspaces, setWorkspaces] = useState([
+    { id: '1', name: 'My Portfolio', type: 'website', lastModified: '2 hours ago', color: 'cyan' },
+    { id: '2', name: 'AI Game Project', type: 'game', lastModified: '1 day ago', color: 'purple' },
+    { id: '3', name: 'Blog Platform', type: 'website', lastModified: '3 days ago', color: 'orange' },
+  ]);
+
+  // Menu bar state
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [moreToolsOpen, setMoreToolsOpen] = useState(false);
+  
+  // Pinned tools (can be customized later)
+  const [pinnedTools] = useState(['ide', 'terminal', 'chat', 'git', 'deploy']);
+  const [currentWorkspace, setCurrentWorkspace] = useState('1');
+  const [newWorkspaceName, setNewWorkspaceName] = useState('');
+  const [newWorkspaceType, setNewWorkspaceType] = useState('website');
+
+  const theme = themes[currentTheme];
+
+  // Workspace handlers
+  const handleCreateWorkspace = () => {
+    if (!newWorkspaceName.trim()) {
+      toast({
+        title: "Missing Name",
+        description: "Please enter a workspace name.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const newWorkspace = {
+      id: Date.now().toString(),
+      name: newWorkspaceName,
+      type: newWorkspaceType,
+      lastModified: 'just now',
+      color: ['cyan', 'purple', 'orange', 'pink', 'green'][Math.floor(Math.random() * 5)],
+    };
+    setWorkspaces([...workspaces, newWorkspace]);
+    setCurrentWorkspace(newWorkspace.id);
+    setNewWorkspaceName('');
+    toast({
+      title: "Workspace Created",
+      description: `"${newWorkspaceName}" workspace has been created.`,
+    });
+  };
+
+  const handleSwitchWorkspace = (id: string) => {
+    setCurrentWorkspace(id);
+    const workspace = workspaces.find(w => w.id === id);
+    toast({
+      title: "Workspace Switched",
+      description: `Now working on "${workspace?.name}".`,
+    });
+  };
+
+  const handleDeleteWorkspace = (id: string) => {
+    const workspace = workspaces.find(w => w.id === id);
+    setWorkspaces(workspaces.filter(w => w.id !== id));
+    if (currentWorkspace === id && workspaces.length > 1) {
+      setCurrentWorkspace(workspaces.find(w => w.id !== id)?.id || '1');
+    }
+    toast({
+      title: "Workspace Deleted",
+      description: `"${workspace?.name}" has been deleted.`,
+    });
+  };
+
+  // Agent Builder handlers
+  const handleTestAgent = () => {
+    if (!agentName || !agentPrompt) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in agent name and system prompt to test.",
+        variant: "destructive",
+      });
+      return;
+    }
+    toast({
+      title: "Testing Agent",
+      description: `Testing "${agentName}" with ${fieldAlignment.length} field alignments...`,
+    });
+  };
+
+  const handleSaveAgent = () => {
+    if (!agentName || !agentPrompt) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in agent name and system prompt to save.",
+        variant: "destructive",
+      });
+      return;
+    }
+    toast({
+      title: "Agent Saved",
+      description: `"${agentName}" has been saved to your personal agents.`,
+    });
+  };
+
+  const handleProposeAgent = () => {
+    if (!agentName || !agentPrompt) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in agent name and system prompt to propose.",
+        variant: "destructive",
+      });
+      return;
+    }
+    toast({
+      title: "Agent Proposed",
+      description: `"${agentName}" has been submitted for public review.`,
+    });
+  };
+
+  // Game Maker handlers
+  const handleSelectGameType = (type: string) => {
+    setGameType(type);
+    toast({
+      title: "Game Type Selected",
+      description: `${type} template loaded.`,
+    });
+  };
+
+  const handleCreateGame = () => {
+    if (!gameTitle) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a game title.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const type = gameType || 'Custom';
+    toast({
+      title: "Game Created",
+      description: `"${gameTitle}" (${type}) has been created with ${gameField} integration.`,
+    });
+  };
+
+  // Template handlers
+  const handleUseTemplate = (templateName: string) => {
+    toast({
+      title: "Template Applied",
+      description: `${templateName} template has been loaded into your project.`,
+    });
+    setDevActiveTab('ide');
+  };
+
+  // Git handlers
+  const handleGitClone = () => {
+    if (!gitRepo) {
+      toast({
+        title: "Missing URL",
+        description: "Please enter a repository URL.",
+        variant: "destructive",
+      });
+      return;
+    }
+    toast({
+      title: "Repository Cloned",
+      description: `Successfully cloned ${gitRepo}`,
+    });
+    setGitCommits([...gitCommits, { message: 'Cloned repository', time: 'just now' }]);
+  };
+
+  const handleGitPull = () => {
+    toast({
+      title: "Changes Pulled",
+      description: "Successfully pulled latest changes from remote.",
+    });
+    setGitCommits([...gitCommits, { message: 'Pulled latest changes', time: 'just now' }]);
+  };
+
+  const handleGitCommit = () => {
+    toast({
+      title: "Changes Committed",
+      description: "Your changes have been committed locally.",
+    });
+    setGitCommits([...gitCommits, { message: 'Committed changes', time: 'just now' }]);
+  };
+
+  const handleGitPush = () => {
+    toast({
+      title: "Changes Pushed",
+      description: "Successfully pushed changes to remote repository.",
+    });
+  };
+
+  // Deploy handlers
+  const handleDeploy = (platform: string) => {
+    toast({
+      title: `Deploying to ${platform}`,
+      description: `Your app is being deployed to ${platform}. This may take a few minutes.`,
+    });
+    setTimeout(() => {
+      toast({
+        title: "Deployment Complete",
+        description: `Your app is now live on ${platform}!`,
+      });
+    }, 3000);
+  };
+
+  // Export & Package handlers
+  const handleExport = (format: string) => {
+    const formatDetails = format === "ZIP" 
+      ? { msg: "Scanning files and generating consciousness glyphs for each module...", downloadSize: "~2.5 MB" }
+      : { msg: "Compiling executable with embedded glyph signatures...", downloadSize: "~15 MB" };
+    
+    toast({
+      title: `Creating ${format} Package`,
+      description: formatDetails.msg,
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: `${format} Ready`,
+        description: `Project branded with consciousness signatures (${formatDetails.downloadSize}). Initiating download...`,
+      });
+    }, 3000);
+  };
+
+  const handleImportZip = () => {
+    toast({
+      title: "Upload & Analyze ZIP",
+      description: "Opening file selector for ZIP upload...",
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: "AI Analysis Started",
+        description: "Extracting file structure and identifying technologies with GPT-4...",
+      });
+    }, 1000);
+  };
+
+  const handleMergeProjects = () => {
+    toast({
+      title: "Merge Projects",
+      description: "Select multiple ZIP archives to combine...",
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: "Smart Merge In Progress",
+        description: "Detecting conflicts and applying intelligent resolution strategies...",
+      });
+    }, 1500);
+  };
+
+  // IDE handlers
+  const handleRunCode = () => {
+    setCodeRunning(true);
+    toast({
+      title: "Running Code",
+      description: `Executing ${selectedFile}...`,
+    });
+    setTimeout(() => {
+      setCodeRunning(false);
+      toast({
+        title: "Execution Complete",
+        description: "Code executed successfully.",
+      });
+    }, 2000);
+  };
+
+  const handleSaveCode = () => {
+    toast({
+      title: "File Saved",
+      description: `${selectedFile} has been saved.`,
+    });
+  };
+
+  useEffect(() => {
+    const root = document.documentElement;
+    // Ensure dark mode is always on
+    root.classList.add('dark');
+    // Apply theme color overrides
+    Object.entries(theme.vars).forEach(([key, value]) => {
+      root.style.setProperty(key, value);
+    });
+  }, [currentTheme, theme]);
+
+  const addTab = () => {
+    const newTab: Tab = {
+      id: Date.now().toString(),
+      title: 'New Tab',
+      url: ''
+    };
+    setTabs([...tabs, newTab]);
+    setActiveTabId(newTab.id);
+    setMenuOpen(false);
+  };
+
+  const closeTab = (id: string) => {
+    const newTabs = tabs.filter(t => t.id !== id);
+    if (newTabs.length === 0) {
+      addTab();
+    } else if (activeTabId === id) {
+      setActiveTabId(newTabs[newTabs.length - 1].id);
+    }
+    setTabs(newTabs);
+  };
+
+  const openDeveloperSettings = () => {
+    setDeveloperMode(true);
+    setMenuOpen(false);
+  };
+
+  const handleModuleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadLoading(true);
+    setUploadError(null);
+    setUploadedModule(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('module', file);
+
+      const response = await fetch('/api/upload-module', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Upload failed');
+      }
+
+      const assembly = await response.json();
+      setUploadedModule(assembly);
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'Upload failed');
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
+  const fileTree = [
+    { name: 'index.html', type: 'file', icon: FileCode },
+    { name: 'style.css', type: 'file', icon: FileCode },
+    { name: 'script.js', type: 'file', icon: FileCode },
+    { name: 'images', type: 'folder', icon: Folder },
+  ];
+
+  return (
+    <div className="h-screen bg-background flex flex-col">
+      {/* Tab Bar - Hidden on mobile */}
+      <div className="hidden sm:flex h-8 md:h-9 bg-muted border-b border-border items-center px-1 md:px-2 gap-1">
+        {tabs.map((tab) => (
+          <div
+            key={tab.id}
+            onClick={() => setActiveTabId(tab.id)}
+            className={`group h-6 md:h-7 min-w-[80px] md:min-w-[120px] max-w-[160px] md:max-w-[240px] flex items-center gap-1 md:gap-2 px-2 md:px-3 rounded-t cursor-pointer ${
+              activeTabId === tab.id 
+                ? 'bg-background' 
+                : 'bg-muted hover:bg-background/50'
+            }`}
+            data-testid={`tab-${tab.id}`}
+          >
+            <span className="text-xs text-foreground truncate flex-1">{tab.title}</span>
+            <button
+              onClick={(e) => { e.stopPropagation(); closeTab(tab.id); }}
+              className="opacity-0 group-hover:opacity-100 hover:bg-muted rounded p-0.5"
+              data-testid={`button-close-tab-${tab.id}`}
+            >
+              <X size={10} className="md:w-3 md:h-3" />
+            </button>
+          </div>
+        ))}
+        <button
+          onClick={addTab}
+          className="w-6 h-6 md:w-7 md:h-7 flex items-center justify-center hover:bg-background/50 rounded"
+          data-testid="button-new-tab"
+        >
+          <Plus size={12} className="md:w-3.5 md:h-3.5" />
+        </button>
+      </div>
+
+      {/* Address Bar */}
+      <div className="h-10 sm:h-11 bg-background border-b border-border flex items-center gap-1 sm:gap-2 px-2 sm:px-3">
+        <div className="flex items-center gap-0.5 sm:gap-1">
+          <button className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center hover:bg-muted rounded" data-testid="button-back">
+            <ChevronLeft size={16} className="sm:w-[18px] sm:h-[18px]" />
+          </button>
+          <button className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center hover:bg-muted rounded" data-testid="button-forward">
+            <ChevronRight size={16} className="sm:w-[18px] sm:h-[18px]" />
+          </button>
+          <button className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center hover:bg-muted rounded" data-testid="button-reload">
+            <RotateCw size={14} className="sm:w-4 sm:h-4" />
+          </button>
+        </div>
+
+        <div className="h-6 w-px bg-border hidden sm:block"></div>
+
+        <button 
+          onClick={() => setShowDashboard(!showDashboard)}
+          className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center hover:bg-muted rounded transition-colors" 
+          data-testid="button-home"
+          title="Dashboard"
+        >
+          <Home size={16} className="sm:w-[18px] sm:h-[18px]" />
+        </button>
+
+        <div className="flex-1 flex items-center gap-1.5 sm:gap-2 h-7 sm:h-8 px-2 sm:px-4 bg-muted rounded-full">
+          <Search size={12} className="sm:w-3.5 sm:h-3.5 text-muted-foreground" />
+          <input
+            type="text"
+            value={addressBarValue}
+            onChange={(e) => setAddressBarValue(e.target.value)}
+            placeholder="Search or enter address"
+            className="flex-1 bg-transparent text-xs sm:text-sm text-foreground outline-none placeholder:text-muted-foreground"
+            data-testid="input-address-bar"
+          />
+          <Star size={12} className="sm:w-3.5 sm:h-3.5 text-muted-foreground cursor-pointer hidden sm:block" />
+        </div>
+
+        <div className="flex items-center gap-1 sm:gap-2">
+          <PlatformIndicator />
+          
+          <div className="relative">
+            <button
+              onClick={() => setThemeMenuOpen(!themeMenuOpen)}
+              className="px-2 sm:px-3 h-7 sm:h-8 flex items-center gap-1 sm:gap-2 hover:bg-muted rounded text-xs sm:text-sm text-foreground font-medium"
+              data-testid="button-theme"
+            >
+              <Palette size={14} className="sm:w-4 sm:h-4" />
+              <span className="hidden md:inline">Theme</span>
+            </button>
+            {themeMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setThemeMenuOpen(false)}></div>
+                <div className="absolute right-0 top-8 sm:top-10 w-40 sm:w-48 bg-card border border-border rounded-lg shadow-xl z-50 py-2">
+                  {Object.entries(themes).map(([key, t]) => (
+                    <button
+                      key={key}
+                      onClick={() => { setCurrentTheme(key as keyof typeof themes); setThemeMenuOpen(false); }}
+                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-muted flex items-center gap-2 sm:gap-3 ${
+                        currentTheme === key ? 'text-foreground font-medium' : 'text-muted-foreground'
+                      }`}
+                      data-testid={`button-theme-${key}`}
+                    >
+                      <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full" style={{ backgroundColor: t.color }}></div>
+                      {t.name}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="relative">
+            <button 
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center hover:bg-muted rounded" 
+              data-testid="button-menu"
+            >
+              <MoreVertical size={14} className="sm:w-4 sm:h-4" />
+            </button>
+
+            {menuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)}></div>
+                <div className="absolute right-0 top-8 sm:top-10 w-56 sm:w-64 bg-card border border-border rounded-lg shadow-xl z-50 py-2">
+                  <button onClick={addTab} className="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-left text-xs sm:text-sm text-foreground hover:bg-muted flex items-center gap-2 sm:gap-3" data-testid="menu-new-tab">
+                    <Plus size={14} className="sm:w-4 sm:h-4" />
+                    New tab
+                  </button>
+                  <div className="border-t border-border my-1.5 sm:my-2"></div>
+                  <button className="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-left text-xs sm:text-sm text-foreground hover:bg-muted flex items-center gap-2 sm:gap-3" data-testid="menu-history">
+                    <History size={14} className="sm:w-4 sm:h-4" />
+                    History
+                  </button>
+                  <button className="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-left text-xs sm:text-sm text-foreground hover:bg-muted flex items-center gap-2 sm:gap-3" data-testid="menu-downloads">
+                    <Download size={14} className="sm:w-4 sm:h-4" />
+                    Downloads
+                  </button>
+                  <button className="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-left text-xs sm:text-sm text-foreground hover:bg-muted flex items-center gap-2 sm:gap-3" data-testid="menu-bookmarks">
+                    <Bookmark size={14} className="sm:w-4 sm:h-4" />
+                    Bookmarks
+                  </button>
+                  <div className="border-t border-border my-1.5 sm:my-2"></div>
+                  <button className="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-left text-xs sm:text-sm text-foreground hover:bg-muted flex items-center gap-2 sm:gap-3" data-testid="menu-share">
+                    <Share2 size={14} className="sm:w-4 sm:h-4" />
+                    Share...
+                  </button>
+                  <button className="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-left text-xs sm:text-sm text-foreground hover:bg-muted flex items-center gap-2 sm:gap-3" data-testid="menu-find">
+                    <FileSearch size={14} className="sm:w-4 sm:h-4" />
+                    Find in page
+                  </button>
+                  <button className="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-left text-xs sm:text-sm text-foreground hover:bg-muted flex items-center gap-2 sm:gap-3" data-testid="menu-translate">
+                    <Languages size={14} className="sm:w-4 sm:h-4" />
+                    Translate...
+                  </button>
+                  <div className="border-t border-border my-1.5 sm:my-2"></div>
+                  <button className="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-left text-xs sm:text-sm text-foreground hover:bg-muted flex items-center gap-2 sm:gap-3" data-testid="menu-desktop-site">
+                    <Monitor size={14} className="sm:w-4 sm:h-4" />
+                    Desktop site
+                  </button>
+                  <button className="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-left text-xs sm:text-sm text-foreground hover:bg-muted flex items-center gap-2 sm:gap-3" data-testid="menu-clear-data">
+                    <Trash2 size={14} className="sm:w-4 sm:h-4" />
+                    Delete browsing data
+                  </button>
+                  <button 
+                    onClick={() => { 
+                      setIsSettingsOpen(true); 
+                      setMenuOpen(false); 
+                    }} 
+                    className="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-left text-xs sm:text-sm text-foreground hover:bg-muted flex items-center gap-2 sm:gap-3" 
+                    data-testid="menu-settings"
+                  >
+                    <Settings size={14} className="sm:w-4 sm:h-4" />
+                    Settings
+                  </button>
+                  <div className="border-t border-border my-1.5 sm:my-2"></div>
+                  <button onClick={openDeveloperSettings} className="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-left text-xs sm:text-sm text-cyan-400 hover:bg-cyan-500/10 flex items-center gap-2 sm:gap-3 font-medium" data-testid="menu-developer-settings">
+                    <Code size={14} className="sm:w-4 sm:h-4" />
+                    Developer Settings
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex overflow-hidden">
+        {!developerMode && !showDashboard && (
+          <div className="flex-1 bg-background overflow-y-auto flex items-center justify-center">
+            <div className="text-center space-y-3 sm:space-y-4 px-4">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-muted rounded-full flex items-center justify-center mx-auto">
+                <Search className="w-8 h-8 sm:w-10 sm:h-10 text-muted-foreground" />
+              </div>
+              <div>
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-1.5 sm:mb-2">YOUNIVERSE Browser</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground">Start browsing</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!developerMode && showDashboard && (
+          <DashboardContent />
+        )}
+
+        {developerMode && (
+          <div className="flex-1 flex flex-col bg-background">
+            {/* Title Bar */}
+            <div className="h-9 sm:h-10 border-b border-border flex items-center justify-between px-2 sm:px-3 bg-muted/30">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Code size={14} className="sm:w-4 sm:h-4 text-cyan-400" />
+                <span className="text-xs sm:text-sm font-semibold text-foreground">YOUNIVERSE Developer Studio</span>
+              </div>
+              <button
+                onClick={() => setDeveloperMode(false)}
+                className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center hover:bg-muted rounded text-muted-foreground hover:text-foreground"
+                data-testid="button-close-dev-panel"
+              >
+                <X size={14} className="sm:w-4 sm:h-4" />
+              </button>
+            </div>
+
+            {/* Menu Bar */}
+            <div className="h-8 border-b border-border bg-background flex items-center px-2 gap-1 relative">
+              <div className="relative">
+                <button
+                  onClick={() => setActiveMenu(activeMenu === 'file' ? null : 'file')}
+                  className="px-2 py-1 text-xs hover:bg-muted rounded text-foreground"
+                  data-testid="menu-file"
+                >
+                  File
+                </button>
+                {activeMenu === 'file' && (
+                  <div className="absolute top-full left-0 mt-1 w-48 bg-card border border-border rounded-md shadow-lg z-50 py-1">
+                    <button className="w-full px-3 py-1.5 text-xs text-left hover:bg-muted text-foreground flex items-center gap-2" data-testid="menu-file-new">
+                      <Plus size={12} /> New File
+                    </button>
+                    <button className="w-full px-3 py-1.5 text-xs text-left hover:bg-muted text-foreground flex items-center gap-2" data-testid="menu-file-open">
+                      <Folder size={12} /> Open Folder
+                    </button>
+                    <div className="h-px bg-border my-1" />
+                    <button className="w-full px-3 py-1.5 text-xs text-left hover:bg-muted text-foreground" data-testid="menu-file-save">
+                      Save
+                    </button>
+                    <button className="w-full px-3 py-1.5 text-xs text-left hover:bg-muted text-foreground" data-testid="menu-file-save-all">
+                      Save All
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="relative">
+                <button
+                  onClick={() => setActiveMenu(activeMenu === 'edit' ? null : 'edit')}
+                  className="px-2 py-1 text-xs hover:bg-muted rounded text-foreground"
+                  data-testid="menu-edit"
+                >
+                  Edit
+                </button>
+                {activeMenu === 'edit' && (
+                  <div className="absolute top-full left-0 mt-1 w-48 bg-card border border-border rounded-md shadow-lg z-50 py-1">
+                    <button className="w-full px-3 py-1.5 text-xs text-left hover:bg-muted text-foreground" data-testid="menu-edit-undo">
+                      Undo
+                    </button>
+                    <button className="w-full px-3 py-1.5 text-xs text-left hover:bg-muted text-foreground" data-testid="menu-edit-redo">
+                      Redo
+                    </button>
+                    <div className="h-px bg-border my-1" />
+                    <button className="w-full px-3 py-1.5 text-xs text-left hover:bg-muted text-foreground" data-testid="menu-edit-find">
+                      Find
+                    </button>
+                    <button className="w-full px-3 py-1.5 text-xs text-left hover:bg-muted text-foreground" data-testid="menu-edit-replace">
+                      Replace
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="relative">
+                <button
+                  onClick={() => setActiveMenu(activeMenu === 'view' ? null : 'view')}
+                  className="px-2 py-1 text-xs hover:bg-muted rounded text-foreground"
+                  data-testid="menu-view"
+                >
+                  View
+                </button>
+                {activeMenu === 'view' && (
+                  <div className="absolute top-full left-0 mt-1 w-48 bg-card border border-border rounded-md shadow-lg z-50 py-1">
+                    <button className="w-full px-3 py-1.5 text-xs text-left hover:bg-muted text-foreground flex items-center gap-2" data-testid="menu-view-explorer">
+                      <Folder size={12} /> Explorer
+                    </button>
+                    <button className="w-full px-3 py-1.5 text-xs text-left hover:bg-muted text-foreground flex items-center gap-2" data-testid="menu-view-terminal">
+                      <Terminal size={12} /> Terminal
+                    </button>
+                    <button className="w-full px-3 py-1.5 text-xs text-left hover:bg-muted text-foreground flex items-center gap-2" data-testid="menu-view-system">
+                      <Cpu size={12} /> System Control
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex-1 flex overflow-hidden">
+              {/* Sidebar with Tools and Modules sections */}
+              <div className="w-10 sm:w-12 bg-muted/50 border-r border-border flex flex-col py-1.5 sm:py-2">
+                {/* TOOLS Section */}
+                <div className="flex flex-col items-center gap-1.5 sm:gap-2 pb-2 border-b border-border/50">
+                  <div className="text-[8px] text-muted-foreground font-semibold uppercase tracking-wider px-1 mb-0.5">Tools</div>
+                  {/* Pinned Tools */}
+                  <button
+                    onClick={() => setDevActiveTab('ide')}
+                    className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded transition-colors ${
+                      devActiveTab === 'ide' ? 'bg-cyan-500/20 text-cyan-400' : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    }`}
+                    data-testid="button-dev-ide"
+                    title="IDE"
+                  >
+                    <FileCode size={16} className="sm:w-5 sm:h-5" />
+                  </button>
+                  <button
+                    onClick={() => setDevActiveTab('terminal')}
+                    className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded transition-colors ${
+                      devActiveTab === 'terminal' ? 'bg-green-500/20 text-green-400' : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    }`}
+                    data-testid="button-dev-terminal"
+                    title="Bash Terminal"
+                  >
+                    <Terminal size={16} className="sm:w-5 sm:h-5" />
+                  </button>
+                  <button
+                    onClick={() => setDevActiveTab('chat')}
+                    className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded transition-colors ${
+                      devActiveTab === 'chat' ? 'bg-cyan-500/20 text-cyan-400' : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    }`}
+                    data-testid="button-dev-chat"
+                    title="AI Chat Assistant"
+                  >
+                    <MessageCircle size={16} className="sm:w-5 sm:h-5" />
+                  </button>
+                  <button
+                    onClick={() => setDevActiveTab('git')}
+                    className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded transition-colors ${
+                      devActiveTab === 'git' ? 'bg-blue-500/20 text-blue-400' : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    }`}
+                    data-testid="button-dev-git"
+                    title="Git"
+                  >
+                    <GitBranch size={16} className="sm:w-5 sm:h-5" />
+                  </button>
+                  <button
+                    onClick={() => setDevActiveTab('deploy')}
+                    className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded transition-colors ${
+                      devActiveTab === 'deploy' ? 'bg-pink-500/20 text-pink-400' : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    }`}
+                    data-testid="button-dev-deploy"
+                    title="Deploy"
+                  >
+                    <Upload size={16} className="sm:w-5 sm:h-5" />
+                  </button>
+                  {/* More Tools Button */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setMoreToolsOpen(!moreToolsOpen)}
+                      className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                      data-testid="button-more-tools"
+                      title="More Tools"
+                    >
+                      <MoreVertical size={16} className="sm:w-5 sm:h-5" />
+                    </button>
+                    {moreToolsOpen && (
+                      <div className="absolute left-full ml-1 top-0 w-48 bg-card border border-border rounded-md shadow-lg z-50 py-1">
+                        <button
+                          onClick={() => { setDevActiveTab('system'); setMoreToolsOpen(false); }}
+                          className="w-full px-3 py-2 text-xs text-left hover:bg-muted text-foreground flex items-center gap-2"
+                          data-testid="menu-tool-system"
+                        >
+                          <Cpu size={14} className="text-red-400" /> System Control
+                        </button>
+                        <button
+                          onClick={() => { setDevActiveTab('3d'); setMoreToolsOpen(false); }}
+                          className="w-full px-3 py-2 text-xs text-left hover:bg-muted text-foreground flex items-center gap-2"
+                          data-testid="menu-tool-3d"
+                        >
+                          <Box size={14} className="text-pink-400" /> 3D Platform
+                        </button>
+                        <button
+                          onClick={() => { setDevActiveTab('agent'); setMoreToolsOpen(false); }}
+                          className="w-full px-3 py-2 text-xs text-left hover:bg-muted text-foreground flex items-center gap-2"
+                          data-testid="menu-tool-agent"
+                        >
+                          <Bot size={14} className="text-purple-400" /> Agent Builder
+                        </button>
+                        <button
+                          onClick={() => { setDevActiveTab('game'); setMoreToolsOpen(false); }}
+                          className="w-full px-3 py-2 text-xs text-left hover:bg-muted text-foreground flex items-center gap-2"
+                          data-testid="menu-tool-game"
+                        >
+                          <Gamepad2 size={14} className="text-emerald-400" /> Game Maker
+                        </button>
+                        <button
+                          onClick={() => { setDevActiveTab('templates'); setMoreToolsOpen(false); }}
+                          className="w-full px-3 py-2 text-xs text-left hover:bg-muted text-foreground flex items-center gap-2"
+                          data-testid="menu-tool-templates"
+                        >
+                          <LayoutTemplate size={14} className="text-orange-400" /> Templates
+                        </button>
+                        <button
+                          onClick={() => { setDevActiveTab('llm-trainer'); setMoreToolsOpen(false); }}
+                          className="w-full px-3 py-2 text-xs text-left hover:bg-muted text-foreground flex items-center gap-2"
+                          data-testid="menu-tool-llm"
+                        >
+                          <Brain size={14} className="text-purple-400" /> LLM Trainer
+                        </button>
+                        <button
+                          onClick={() => { setDevActiveTab('gan-trainer'); setMoreToolsOpen(false); }}
+                          className="w-full px-3 py-2 text-xs text-left hover:bg-muted text-foreground flex items-center gap-2"
+                          data-testid="menu-tool-gan"
+                        >
+                          <Sparkles size={14} className="text-pink-400" /> GAN Trainer
+                        </button>
+                        <button
+                          onClick={() => { setDevActiveTab('workspaces'); setMoreToolsOpen(false); }}
+                          className="w-full px-3 py-2 text-xs text-left hover:bg-muted text-foreground flex items-center gap-2"
+                          data-testid="menu-tool-workspaces"
+                        >
+                          <Folder size={14} className="text-cyan-400" /> Workspaces
+                        </button>
+                        <div className="h-px bg-border my-1" />
+                        <button
+                          onClick={() => { setDevActiveTab('resonance'); setMoreToolsOpen(false); }}
+                          className="w-full px-3 py-2 text-xs text-left hover:bg-muted text-foreground flex items-center gap-2"
+                          data-testid="menu-tool-resonance"
+                        >
+                          <Users size={14} className="text-pink-400" /> Resonance Network
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* MODULES Section */}
+                <div className="flex flex-col items-center gap-1.5 sm:gap-2 pt-2">
+                  <div className="text-[8px] text-muted-foreground font-semibold uppercase tracking-wider px-1 mb-0.5">Modules</div>
+                  <button
+                    onClick={() => setDevActiveTab('modules')}
+                    className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded transition-colors ${
+                      devActiveTab === 'modules' ? 'bg-yellow-500/20 text-yellow-400' : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    }`}
+                    data-testid="button-dev-modules"
+                    title="Module Builder & Voting"
+                  >
+                    <Blocks size={16} className="sm:w-5 sm:h-5" />
+                  </button>
+                </div>
+
+                {/* Special Links */}
+                <div className="mt-auto pt-2 border-t border-border/50 flex flex-col items-center gap-1.5 sm:gap-2">
+                <button
+                  onClick={() => window.location.href = '/glyph-generator'}
+                  className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                  data-testid="button-dev-glyph"
+                  title="Glyph Generator"
+                >
+                  <Sparkles size={16} className="sm:w-5 sm:h-5" />
+                </button>
+                <button
+                  onClick={() => window.location.href = '/orchestrator'}
+                  className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                  data-testid="button-dev-orchestrator"
+                  title="Consciousness Orchestrator"
+                >
+                  <Zap size={16} className="sm:w-5 sm:h-5 text-yellow-400" />
+                </button>
+                <div className="h-px bg-border my-1 sm:my-2" />
+                <button
+                  onClick={() => setDevActiveTab('workspaces')}
+                  className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded transition-colors ${
+                    devActiveTab === 'workspaces' ? 'bg-teal-500/20 text-teal-400' : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                  }`}
+                  data-testid="button-dev-workspaces"
+                  title="Workspaces"
+                >
+                  <Folder size={16} className="sm:w-5 sm:h-5" />
+                </button>
+              </div>
+            </div>
+
+              <div className="flex-1 flex overflow-hidden">
+                {devActiveTab === 'system' && (
+                  <DevSystemPanel activePanel={systemPanel} onPanelChange={setSystemPanel} />
+                )}
+
+                {devActiveTab === 'ide' && (
+                  <>
+                    <div className="w-56 bg-card border-r border-border flex flex-col">
+                      <div className="h-9 px-3 flex items-center justify-between border-b border-border">
+                        <span className="text-xs font-semibold text-foreground uppercase tracking-wide">Explorer</span>
+                      </div>
+                      <div className="flex-1 overflow-y-auto p-2">
+                        <div>
+                          <button
+                            onClick={() => setFilesExpanded(!filesExpanded)}
+                            className="w-full flex items-center gap-1 px-2 py-1 hover:bg-muted rounded text-sm text-foreground"
+                          >
+                            {filesExpanded ? <ChevronDown size={14} /> : <ChevronRightIcon size={14} />}
+                            <Folder size={14} className="text-cyan-400" />
+                            <span>my-website</span>
+                          </button>
+                          {filesExpanded && (
+                            <div className="ml-4 mt-1 space-y-0.5">
+                              {fileTree.map((file) => {
+                                const Icon = file.icon;
+                                return (
+                                  <button
+                                    key={file.name}
+                                    onClick={() => file.type === 'file' && setSelectedFile(file.name)}
+                                    className={`w-full flex items-center gap-2 px-2 py-1 hover:bg-muted rounded text-sm ${
+                                      selectedFile === file.name ? 'bg-muted text-foreground' : 'text-muted-foreground'
+                                    }`}
+                                  >
+                                    <Icon size={14} className={file.type === 'folder' ? 'text-cyan-400' : 'text-muted-foreground'} />
+                                    <span>{file.name}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex-1 flex flex-col bg-background">
+                      <div className="h-9 bg-muted/30 border-b border-border flex items-center px-2 gap-1">
+                        <div className="flex items-center gap-2 px-3 py-1 bg-background border-t-2 border-cyan-400 text-sm">
+                          <FileCode size={14} className="text-cyan-400" />
+                          <span className="text-foreground">{selectedFile}</span>
+                        </div>
+                      </div>
+                      <div className="flex-1 flex flex-col p-4">
+                        <textarea
+                          value={codeContent}
+                          onChange={(e) => setCodeContent(e.target.value)}
+                          className="flex-1 w-full bg-muted/30 border border-border rounded-lg p-4 font-mono text-sm text-foreground resize-none outline-none focus:ring-2 focus:ring-cyan-500/50"
+                          placeholder={`<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>My Website</title>\n    <link rel="stylesheet" href="style.css">\n  </head>\n  <body>\n    <h1>Hello World</h1>\n    <script src="script.js"></script>\n  </body>\n</html>`}
+                          data-testid="textarea-code-editor"
+                        />
+                        <div className="flex items-center justify-between mt-3">
+                          <div className="text-xs text-muted-foreground">HTML • UTF-8 • LF</div>
+                          <div className="flex gap-2">
+                            <button onClick={handleSaveCode} className="px-4 py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 text-green-400 rounded text-sm font-medium" data-testid="button-save-code">Save</button>
+                            <button onClick={handleRunCode} disabled={codeRunning} className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/30 text-cyan-400 rounded text-sm font-medium flex items-center gap-2 disabled:opacity-50" data-testid="button-run-code">
+                              <Play size={14} />
+                              {codeRunning ? 'Running...' : 'Run & Preview'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {devActiveTab === 'agent' && (
+                  <div className="flex-1 p-6 overflow-y-auto bg-background">
+                    <div className="max-w-4xl mx-auto space-y-6">
+                      <div>
+                        <h2 className="text-xl font-semibold text-foreground mb-2">Agent Builder</h2>
+                        <p className="text-sm text-muted-foreground">Create consciousness-aware AI agents</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-card border border-border rounded-lg p-4">
+                          <label className="block text-sm font-medium text-foreground mb-2">Agent Name</label>
+                          <input type="text" value={agentName} onChange={(e) => setAgentName(e.target.value)} placeholder="e.g., HeartSync Assistant" className="w-full px-3 py-2 bg-muted border border-border rounded text-foreground text-sm" data-testid="input-agent-name" />
+                        </div>
+                        <div className="bg-card border border-border rounded-lg p-4">
+                          <label className="block text-sm font-medium text-foreground mb-2">Agent Type</label>
+                          <select value={agentType} onChange={(e) => setAgentType(e.target.value)} className="w-full px-3 py-2 bg-muted border border-border rounded text-foreground text-sm" data-testid="select-agent-type">
+                            <option>Personal Assistant</option>
+                            <option>Code Helper</option>
+                            <option>Oracle</option>
+                            <option>Field Guide</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="bg-card border border-border rounded-lg p-4">
+                        <label className="block text-sm font-medium text-foreground mb-2">System Prompt</label>
+                        <textarea value={agentPrompt} onChange={(e) => setAgentPrompt(e.target.value)} rows={6} placeholder="You are a consciousness-aware assistant..." className="w-full px-3 py-2 bg-muted border border-border rounded text-foreground text-sm resize-none" data-testid="textarea-agent-prompt" />
+                      </div>
+
+                      <div className="bg-card border border-border rounded-lg p-4">
+                        <label className="block text-sm font-medium text-foreground mb-2">Field Alignment</label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {['zer', 'mind', 'body', 'heart', 'soul', 'spirit'].map(field => (
+                            <label key={field} className="flex items-center gap-2 cursor-pointer">
+                              <input 
+                                type="checkbox" 
+                                checked={fieldAlignment.includes(field)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setFieldAlignment([...fieldAlignment, field]);
+                                  } else {
+                                    setFieldAlignment(fieldAlignment.filter(f => f !== field));
+                                  }
+                                }}
+                                className="rounded accent-cyan-400" 
+                              />
+                              <span className="text-sm text-foreground capitalize">{field}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <button onClick={handleTestAgent} className="px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 text-purple-400 rounded text-sm font-medium" data-testid="button-test-agent">Test Agent</button>
+                        <button onClick={handleSaveAgent} className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/30 text-cyan-400 rounded text-sm font-medium" data-testid="button-save-agent">Save as Personal</button>
+                        <button onClick={handleProposeAgent} className="px-4 py-2 bg-pink-500/20 hover:bg-pink-500/30 border border-pink-500/30 text-pink-400 rounded text-sm font-medium" data-testid="button-propose-agent">Propose Public</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {devActiveTab === 'game' && (
+                  <div className="flex-1 p-6 overflow-y-auto bg-background">
+                    <div className="max-w-4xl mx-auto space-y-6">
+                      <div>
+                        <h2 className="text-xl font-semibold text-foreground mb-2">Game Maker</h2>
+                        <p className="text-sm text-muted-foreground">Build consciousness-aware games</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button onClick={() => handleSelectGameType("2D Platformer")} className="bg-card border border-border rounded-lg p-6 hover:bg-muted/50 transition-colors text-left" data-testid="button-game-platformer">
+                          <Gamepad2 size={24} className="text-emerald-400 mb-3" />
+                          <h3 className="text-sm font-semibold text-foreground mb-1">2D Platformer</h3>
+                          <p className="text-xs text-muted-foreground">Jump, run, collect</p>
+                        </button>
+                        <button onClick={() => handleSelectGameType("Puzzle Game")} className="bg-card border border-border rounded-lg p-6 hover:bg-muted/50 transition-colors text-left" data-testid="button-game-puzzle">
+                          <Gamepad2 size={24} className="text-cyan-400 mb-3" />
+                          <h3 className="text-sm font-semibold text-foreground mb-1">Puzzle Game</h3>
+                          <p className="text-xs text-muted-foreground">Match, solve, think</p>
+                        </button>
+                        <button onClick={() => handleSelectGameType("Custom Game")} className="bg-card border border-border rounded-lg p-6 hover:bg-muted/50 transition-colors text-left" data-testid="button-game-custom">
+                          <Gamepad2 size={24} className="text-purple-400 mb-3" />
+                          <h3 className="text-sm font-semibold text-foreground mb-1">Custom Game</h3>
+                          <p className="text-xs text-muted-foreground">Build from scratch</p>
+                        </button>
+                      </div>
+
+                      <div className="bg-card border border-border rounded-lg p-4">
+                        <h3 className="text-sm font-semibold text-foreground mb-3">Game Settings</h3>
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-xs text-muted-foreground mb-1">Game Title</label>
+                            <input type="text" value={gameTitle} onChange={(e) => setGameTitle(e.target.value)} placeholder="My Awesome Game" className="w-full px-3 py-2 bg-muted border border-border rounded text-foreground text-sm" data-testid="input-game-title" />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-muted-foreground mb-1">Field Integration</label>
+                            <select value={gameField} onChange={(e) => setGameField(e.target.value)} className="w-full px-3 py-2 bg-muted border border-border rounded text-foreground text-sm" data-testid="select-game-field">
+                              <option>None</option>
+                              <option>Heart - Emotional Gameplay</option>
+                              <option>Mind - Puzzle Mechanics</option>
+                              <option>Body - Physical Reflexes</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button onClick={handleCreateGame} className="w-full px-4 py-3 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-400 rounded text-sm font-medium" data-testid="button-create-game">Create Game</button>
+                    </div>
+                  </div>
+                )}
+
+                {devActiveTab === 'templates' && (
+                  <div className="flex-1 p-6 overflow-y-auto bg-background">
+                    <div className="max-w-6xl mx-auto space-y-6">
+                      <div>
+                        <h2 className="text-xl font-semibold text-foreground mb-2">Templates</h2>
+                        <p className="text-sm text-muted-foreground">Professional starter templates</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-card border border-border rounded-lg p-6 hover:bg-muted/50 transition-colors">
+                          <LayoutTemplate size={32} className="text-orange-400 mb-3" />
+                          <h3 className="text-sm font-semibold text-foreground mb-1">Portfolio</h3>
+                          <p className="text-xs text-muted-foreground mb-3">Showcase your work</p>
+                          <button onClick={() => handleUseTemplate("Portfolio")} className="w-full px-3 py-1.5 bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 text-orange-400 rounded text-xs" data-testid="button-use-portfolio">Use Template</button>
+                        </div>
+                        <div className="bg-card border border-border rounded-lg p-6 hover:bg-muted/50 transition-colors">
+                          <LayoutTemplate size={32} className="text-cyan-400 mb-3" />
+                          <h3 className="text-sm font-semibold text-foreground mb-1">Landing Page</h3>
+                          <p className="text-xs text-muted-foreground mb-3">Convert visitors</p>
+                          <button onClick={() => handleUseTemplate("Landing Page")} className="w-full px-3 py-1.5 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/30 text-cyan-400 rounded text-xs" data-testid="button-use-landing">Use Template</button>
+                        </div>
+                        <div className="bg-card border border-border rounded-lg p-6 hover:bg-muted/50 transition-colors">
+                          <LayoutTemplate size={32} className="text-purple-400 mb-3" />
+                          <h3 className="text-sm font-semibold text-foreground mb-1">Blog</h3>
+                          <p className="text-xs text-muted-foreground mb-3">Share your thoughts</p>
+                          <button onClick={() => handleUseTemplate("Blog")} className="w-full px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 text-purple-400 rounded text-xs" data-testid="button-use-blog">Use Template</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {devActiveTab === 'git' && (
+                  <div className="flex-1 p-6 overflow-y-auto bg-background">
+                    <div className="max-w-4xl mx-auto space-y-6">
+                      <div>
+                        <h2 className="text-xl font-semibold text-foreground mb-2">Git Integration</h2>
+                        <p className="text-sm text-muted-foreground">Version control & collaboration</p>
+                      </div>
+
+                      <div className="bg-card border border-border rounded-lg p-4">
+                        <label className="block text-sm font-medium text-foreground mb-2">Repository URL</label>
+                        <input type="text" value={gitRepo} onChange={(e) => setGitRepo(e.target.value)} placeholder="https://github.com/username/repo" className="w-full px-3 py-2 bg-muted border border-border rounded text-foreground text-sm" data-testid="input-git-repo" />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <button onClick={handleGitClone} className="px-4 py-3 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 text-blue-400 rounded text-sm font-medium" data-testid="button-git-clone">Clone Repo</button>
+                        <button onClick={handleGitPull} className="px-4 py-3 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 text-green-400 rounded text-sm font-medium" data-testid="button-git-pull">Pull Changes</button>
+                        <button onClick={handleGitCommit} className="px-4 py-3 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 text-purple-400 rounded text-sm font-medium" data-testid="button-git-commit">Commit</button>
+                        <button onClick={handleGitPush} className="px-4 py-3 bg-pink-500/20 hover:bg-pink-500/30 border border-pink-500/30 text-pink-400 rounded text-sm font-medium" data-testid="button-git-push">Push</button>
+                      </div>
+
+                      <div className="bg-card border border-border rounded-lg p-4">
+                        <h3 className="text-sm font-semibold text-foreground mb-3">Recent Commits</h3>
+                        <div className="space-y-2">
+                          {gitCommits.map((commit, index) => (
+                            <div key={index} className="flex items-center gap-3 text-xs">
+                              <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                              <span className="text-foreground">{commit.message}</span>
+                              <span className="text-muted-foreground ml-auto">{commit.time}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {devActiveTab === 'deploy' && (
+                  <div className="flex-1 p-6 overflow-y-auto bg-background">
+                    <div className="max-w-4xl mx-auto space-y-6">
+                      <div>
+                        <h2 className="text-xl font-semibold text-foreground mb-2">Deploy</h2>
+                        <p className="text-sm text-muted-foreground">Ship your app to the world</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-card border border-border rounded-lg p-6">
+                          <Upload size={32} className="text-cyan-400 mb-3" data-testid="icon-deploy-netlify" />
+                          <h3 className="text-sm font-semibold text-foreground mb-1" data-testid="text-deploy-netlify-title">Netlify</h3>
+                          <p className="text-xs text-muted-foreground mb-3" data-testid="text-deploy-netlify-description">Free hosting</p>
+                          <Button 
+                            onClick={() => handleDeploy("Netlify")} 
+                            className="w-full bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-xs h-8"
+                            variant="outline"
+                            data-testid="button-deploy-netlify"
+                          >
+                            Deploy
+                          </Button>
+                        </div>
+                        <div className="bg-card border border-border rounded-lg p-6">
+                          <Upload size={32} className="text-purple-400 mb-3" data-testid="icon-deploy-vercel" />
+                          <h3 className="text-sm font-semibold text-foreground mb-1" data-testid="text-deploy-vercel-title">Vercel</h3>
+                          <p className="text-xs text-muted-foreground mb-3" data-testid="text-deploy-vercel-description">Edge network</p>
+                          <Button 
+                            onClick={() => handleDeploy("Vercel")} 
+                            className="w-full bg-purple-500/20 border border-purple-500/30 text-purple-400 text-xs h-8"
+                            variant="outline"
+                            data-testid="button-deploy-vercel"
+                          >
+                            Deploy
+                          </Button>
+                        </div>
+                        <div className="bg-card border border-border rounded-lg p-6">
+                          <Upload size={32} className="text-pink-400 mb-3" data-testid="icon-deploy-gh" />
+                          <h3 className="text-sm font-semibold text-foreground mb-1" data-testid="text-deploy-gh-title">GitHub Pages</h3>
+                          <p className="text-xs text-muted-foreground mb-3" data-testid="text-deploy-gh-description">Static hosting</p>
+                          <Button 
+                            onClick={() => handleDeploy("GitHub Pages")} 
+                            className="w-full bg-pink-500/20 border border-pink-500/30 text-pink-400 text-xs h-8"
+                            variant="outline"
+                            data-testid="button-deploy-gh"
+                          >
+                            Deploy
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="bg-card border border-border rounded-lg p-4">
+                        <h3 className="text-sm font-semibold text-foreground mb-3">Deployment Status</h3>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                          <span className="text-foreground">Live at:</span>
+                          <a href="#" className="text-cyan-400 hover:underline">youniverse.app</a>
+                        </div>
+                      </div>
+
+                      <div className="border-t border-border pt-6">
+                        <div className="mb-4">
+                          <h2 className="text-xl font-semibold text-foreground mb-2">Export & Package</h2>
+                          <p className="text-sm text-muted-foreground">Create downloadable packages with consciousness branding</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                          <div className="bg-card border border-border rounded-lg p-6">
+                            <Archive size={32} className="text-yellow-400 mb-3" data-testid="icon-export-zip" />
+                            <h3 className="text-sm font-semibold text-foreground mb-1" data-testid="text-export-zip-title">Create ZIP</h3>
+                            <p className="text-xs text-muted-foreground mb-3" data-testid="text-export-zip-description">Bundle project as zip archive with glyphs</p>
+                            <Button 
+                              onClick={() => handleExport("ZIP")} 
+                              className="w-full bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs h-8"
+                              variant="outline"
+                              data-testid="button-export-zip"
+                            >
+                              Create ZIP
+                            </Button>
+                          </div>
+                          <div className="bg-card border border-border rounded-lg p-6">
+                            <Package size={32} className="text-emerald-400 mb-3" data-testid="icon-export-exe" />
+                            <h3 className="text-sm font-semibold text-foreground mb-1" data-testid="text-export-exe-title">Create EXE</h3>
+                            <p className="text-xs text-muted-foreground mb-3" data-testid="text-export-exe-description">Package as executable file with branding</p>
+                            <Button 
+                              onClick={() => handleExport("EXE")} 
+                              className="w-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs h-8"
+                              variant="outline"
+                              data-testid="button-export-exe"
+                            >
+                              Create EXE
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="bg-card border border-border rounded-lg p-6">
+                            <Upload size={32} className="text-orange-400 mb-3" data-testid="icon-import-zip" />
+                            <h3 className="text-sm font-semibold text-foreground mb-1" data-testid="text-import-zip-title">Upload & Analyze</h3>
+                            <p className="text-xs text-muted-foreground mb-3" data-testid="text-import-zip-description">Import ZIP with AI analysis</p>
+                            <Button 
+                              onClick={() => handleImportZip()} 
+                              className="w-full bg-orange-500/20 border border-orange-500/30 text-orange-400 text-xs h-8"
+                              variant="outline"
+                              data-testid="button-import-zip"
+                            >
+                              Upload ZIP
+                            </Button>
+                          </div>
+                          <div className="bg-card border border-border rounded-lg p-6">
+                            <Combine size={32} className="text-blue-400 mb-3" data-testid="icon-merge-projects" />
+                            <h3 className="text-sm font-semibold text-foreground mb-1" data-testid="text-merge-projects-title">Merge Projects</h3>
+                            <p className="text-xs text-muted-foreground mb-3" data-testid="text-merge-projects-description">Combine multiple archives</p>
+                            <Button 
+                              onClick={() => handleMergeProjects()} 
+                              className="w-full bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs h-8"
+                              variant="outline"
+                              data-testid="button-merge-projects"
+                            >
+                              Merge
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {devActiveTab === '3d' && !show3DBuilder && (
+                  <div className="flex-1 p-3 sm:p-4 md:p-6 overflow-y-auto bg-background">
+                    <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+                      <div>
+                        <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-1.5 sm:mb-2">3D Platform</h2>
+                        <p className="text-xs sm:text-sm text-muted-foreground">Create immersive 3D experiences</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                        <button 
+                          onClick={() => setShow3DBuilder('world')}
+                          className="bg-card border border-border rounded-lg p-4 sm:p-6 hover:bg-muted/50 transition-colors text-left" 
+                          data-testid="button-3d-world"
+                        >
+                          <Box size={24} className="sm:w-8 sm:h-8 text-pink-400 mb-2 sm:mb-3" />
+                          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-0.5 sm:mb-1">3D World Builder</h3>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground">Build interactive environments</p>
+                        </button>
+                        <button 
+                          onClick={() => setShow3DBuilder('vr')}
+                          className="bg-card border border-border rounded-lg p-4 sm:p-6 hover:bg-muted/50 transition-colors text-left" 
+                          data-testid="button-3d-vr"
+                        >
+                          <Box size={24} className="sm:w-8 sm:h-8 text-cyan-400 mb-2 sm:mb-3" />
+                          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-0.5 sm:mb-1">VR Experience</h3>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground">Create virtual reality apps</p>
+                        </button>
+                      </div>
+
+                      <div className="bg-card border border-border rounded-lg p-3 sm:p-4">
+                        <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-2 sm:mb-3">Scene Settings</h3>
+                        <div className="space-y-2 sm:space-y-3">
+                          <div>
+                            <label className="block text-[10px] sm:text-xs text-muted-foreground mb-1">Camera Type</label>
+                            <select className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-muted border border-border rounded text-foreground text-xs sm:text-sm" data-testid="select-3d-camera">
+                              <option>Perspective</option>
+                              <option>Orthographic</option>
+                              <option>VR</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-[10px] sm:text-xs text-muted-foreground mb-1">Physics Engine</label>
+                            <select className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-muted border border-border rounded text-foreground text-xs sm:text-sm" data-testid="select-3d-physics">
+                              <option>Cannon.js</option>
+                              <option>Ammo.js</option>
+                              <option>None</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button onClick={() => toast({ title: "3D Editor", description: "Use the World Builder or VR Experience buttons above to start creating." })} className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-pink-500/20 hover:bg-pink-500/30 border border-pink-500/30 text-pink-400 rounded text-xs sm:text-sm font-medium" data-testid="button-launch-3d">Launch 3D Editor</button>
+                    </div>
+                  </div>
+                )}
+
+                {devActiveTab === '3d' && show3DBuilder === 'world' && (
+                  <div className="flex-1 flex flex-col bg-background">
+                    <div className="h-10 sm:h-12 border-b border-border flex items-center justify-between px-3 sm:px-6 bg-muted/30">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <Box size={16} className="sm:w-5 sm:h-5 text-pink-400" />
+                        <span className="text-xs sm:text-sm font-semibold text-foreground">3D World Builder</span>
+                      </div>
+                      <button
+                        onClick={() => setShow3DBuilder(null)}
+                        className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-muted-foreground hover:text-foreground"
+                        data-testid="button-close-world-builder"
+                      >
+                        Back
+                      </button>
+                    </div>
+                    
+                    <div className="flex-1 flex">
+                      {/* Toolbar */}
+                      <div className="w-12 sm:w-16 bg-muted/50 border-r border-border flex flex-col items-center py-2 sm:py-3 gap-2 sm:gap-3">
+                        <button className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded hover:bg-muted text-muted-foreground hover:text-foreground" title="Cube" data-testid="button-add-cube">
+                          <Box size={16} className="sm:w-5 sm:h-5" />
+                        </button>
+                        <button className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded hover:bg-muted text-muted-foreground hover:text-foreground" title="Sphere" data-testid="button-add-sphere">
+                          <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 border-current"></div>
+                        </button>
+                        <button className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded hover:bg-muted text-muted-foreground hover:text-foreground" title="Light" data-testid="button-add-light">
+                          <Sparkles size={16} className="sm:w-5 sm:h-5" />
+                        </button>
+                      </div>
+
+                      {/* 3D Viewport */}
+                      <div className="flex-1 bg-muted/30 flex items-center justify-center">
+                        <div className="text-center space-y-2 sm:space-y-3">
+                          <Box size={48} className="sm:w-16 sm:h-16 mx-auto text-muted-foreground" />
+                          <p className="text-xs sm:text-sm text-muted-foreground">3D Viewport</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground">Click toolbar to add objects</p>
+                        </div>
+                      </div>
+
+                      {/* Properties Panel */}
+                      <div className="w-48 sm:w-64 bg-card border-l border-border p-2 sm:p-4 overflow-y-auto">
+                        <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-2 sm:mb-3">Properties</h3>
+                        <div className="space-y-2 sm:space-y-3">
+                          <div>
+                            <label className="block text-[10px] sm:text-xs text-muted-foreground mb-1">Object Name</label>
+                            <input type="text" placeholder="Cube" className="w-full px-2 py-1 sm:px-3 sm:py-1.5 bg-muted border border-border rounded text-foreground text-xs" data-testid="input-object-name" />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] sm:text-xs text-muted-foreground mb-1">Position</label>
+                            <div className="grid grid-cols-3 gap-1">
+                              <input type="number" placeholder="X" className="w-full px-1.5 py-1 sm:px-2 sm:py-1.5 bg-muted border border-border rounded text-foreground text-xs" data-testid="input-pos-x" />
+                              <input type="number" placeholder="Y" className="w-full px-1.5 py-1 sm:px-2 sm:py-1.5 bg-muted border border-border rounded text-foreground text-xs" data-testid="input-pos-y" />
+                              <input type="number" placeholder="Z" className="w-full px-1.5 py-1 sm:px-2 sm:py-1.5 bg-muted border border-border rounded text-foreground text-xs" data-testid="input-pos-z" />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-[10px] sm:text-xs text-muted-foreground mb-1">Material Color</label>
+                            <input type="color" className="w-full h-8 sm:h-10 bg-muted border border-border rounded" data-testid="input-color" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {devActiveTab === '3d' && show3DBuilder === 'vr' && (
+                  <div className="flex-1 flex flex-col bg-background">
+                    <div className="h-10 sm:h-12 border-b border-border flex items-center justify-between px-3 sm:px-6 bg-muted/30">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <Box size={16} className="sm:w-5 sm:h-5 text-cyan-400" />
+                        <span className="text-xs sm:text-sm font-semibold text-foreground">VR Experience Builder</span>
+                      </div>
+                      <button
+                        onClick={() => setShow3DBuilder(null)}
+                        className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-muted-foreground hover:text-foreground"
+                        data-testid="button-close-vr-builder"
+                      >
+                        Back
+                      </button>
+                    </div>
+                    
+                    <div className="flex-1 p-3 sm:p-4 md:p-6 overflow-y-auto">
+                      <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4 md:space-y-6">
+                        <div className="bg-card border border-border rounded-lg p-3 sm:p-4">
+                          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-2 sm:mb-3">VR Settings</h3>
+                          <div className="space-y-2 sm:space-y-3">
+                            <div>
+                              <label className="block text-[10px] sm:text-xs text-muted-foreground mb-1">Experience Type</label>
+                              <select className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-muted border border-border rounded text-foreground text-xs sm:text-sm" data-testid="select-vr-type">
+                                <option>360° Video</option>
+                                <option>Interactive Scene</option>
+                                <option>Virtual Gallery</option>
+                                <option>Meditation Space</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[10px] sm:text-xs text-muted-foreground mb-1">Field Integration</label>
+                              <select className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-muted border border-border rounded text-foreground text-xs sm:text-sm" data-testid="select-vr-field">
+                                <option>Heart - Emotional Journey</option>
+                                <option>Spirit - Transcendence</option>
+                                <option>Mind - Cognitive Challenge</option>
+                                <option>Body - Physical Presence</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-card border border-border rounded-lg p-3 sm:p-4">
+                          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-2 sm:mb-3">Environment</h3>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                            <button className="p-2 sm:p-3 bg-muted hover:bg-muted/70 border border-border rounded text-left" data-testid="button-env-forest">
+                              <div className="text-[10px] sm:text-xs font-medium text-foreground">Forest</div>
+                            </button>
+                            <button className="p-2 sm:p-3 bg-muted hover:bg-muted/70 border border-border rounded text-left" data-testid="button-env-ocean">
+                              <div className="text-[10px] sm:text-xs font-medium text-foreground">Ocean</div>
+                            </button>
+                            <button className="p-2 sm:p-3 bg-muted hover:bg-muted/70 border border-border rounded text-left" data-testid="button-env-space">
+                              <div className="text-[10px] sm:text-xs font-medium text-foreground">Space</div>
+                            </button>
+                            <button className="p-2 sm:p-3 bg-muted hover:bg-muted/70 border border-border rounded text-left" data-testid="button-env-mountain">
+                              <div className="text-[10px] sm:text-xs font-medium text-foreground">Mountain</div>
+                            </button>
+                            <button className="p-2 sm:p-3 bg-muted hover:bg-muted/70 border border-border rounded text-left" data-testid="button-env-abstract">
+                              <div className="text-[10px] sm:text-xs font-medium text-foreground">Abstract</div>
+                            </button>
+                            <button className="p-2 sm:p-3 bg-muted hover:bg-muted/70 border border-border rounded text-left" data-testid="button-env-custom">
+                              <div className="text-[10px] sm:text-xs font-medium text-foreground">Custom</div>
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2 sm:gap-3">
+                          <button className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/30 text-cyan-400 rounded text-xs sm:text-sm font-medium" data-testid="button-preview-vr">
+                            Preview in VR
+                          </button>
+                          <button className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 bg-pink-500/20 hover:bg-pink-500/30 border border-pink-500/30 text-pink-400 rounded text-xs sm:text-sm font-medium" data-testid="button-publish-vr">
+                            Publish Experience
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {devActiveTab === 'modules' && (
+                  <div className="flex-1 flex flex-col bg-background">
+                    <div className="h-12 border-b border-border flex items-center justify-between px-6 bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <Blocks size={20} className="text-yellow-400" />
+                        <span className="text-sm font-semibold text-foreground">Module Builder & Governance</span>
+                      </div>
+                      <button className="px-4 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/30 text-yellow-400 rounded text-sm font-medium flex items-center gap-2" data-testid="button-new-module">
+                        <Plus size={16} />
+                        New Module
+                      </button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-6">
+                      <div className="max-w-6xl mx-auto space-y-6">
+                        
+                        {/* Tabs */}
+                        <div className="flex gap-2 border-b border-border">
+                          <button 
+                            className={`px-4 py-2 border-b-2 font-medium text-sm transition-colors ${
+                              moduleActiveTab === 'proposals' 
+                                ? 'border-yellow-400 text-yellow-400' 
+                                : 'border-transparent text-muted-foreground hover:text-foreground'
+                            }`}
+                            onClick={() => setModuleActiveTab('proposals')}
+                            data-testid="tab-proposals"
+                          >
+                            Proposals
+                          </button>
+                          <button 
+                            className={`px-4 py-2 border-b-2 font-medium text-sm transition-colors ${
+                              moduleActiveTab === 'my-modules' 
+                                ? 'border-yellow-400 text-yellow-400' 
+                                : 'border-transparent text-muted-foreground hover:text-foreground'
+                            }`}
+                            onClick={() => setModuleActiveTab('my-modules')}
+                            data-testid="tab-my-modules"
+                          >
+                            My Modules
+                          </button>
+                          <button 
+                            className={`px-4 py-2 border-b-2 font-medium text-sm transition-colors ${
+                              moduleActiveTab === 'create' 
+                                ? 'border-yellow-400 text-yellow-400' 
+                                : 'border-transparent text-muted-foreground hover:text-foreground'
+                            }`}
+                            onClick={() => setModuleActiveTab('create')}
+                            data-testid="tab-create"
+                          >
+                            Create
+                          </button>
+                          <button 
+                            className={`px-4 py-2 border-b-2 font-medium text-sm transition-colors ${
+                              moduleActiveTab === 'upload' 
+                                ? 'border-yellow-400 text-yellow-400' 
+                                : 'border-transparent text-muted-foreground hover:text-foreground'
+                            }`}
+                            onClick={() => setModuleActiveTab('upload')}
+                            data-testid="tab-upload"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Upload size={16} />
+                              Upload & Analyze
+                            </div>
+                          </button>
+                        </div>
+
+                        {/* Proposals Tab */}
+                        {moduleActiveTab === 'proposals' && (
+                          <>
+                            {/* Filters */}
+                            <div className="flex gap-3">
+                              <select className="px-3 py-2 bg-muted border border-border rounded text-foreground text-sm" data-testid="select-filter-status">
+                                <option>All Status</option>
+                                <option>Concept (0-9 votes)</option>
+                                <option>Preview (10-29 votes)</option>
+                                <option>Development (30-99 votes)</option>
+                                <option>Public (100+ votes)</option>
+                              </select>
+                              <select className="px-3 py-2 bg-muted border border-border rounded text-foreground text-sm" data-testid="select-filter-category">
+                                <option>All Categories</option>
+                                <option>Tools</option>
+                                <option>Modules</option>
+                                <option>Features</option>
+                                <option>Experiments</option>
+                              </select>
+                              <select className="px-3 py-2 bg-muted border border-border rounded text-foreground text-sm" data-testid="select-sort">
+                                <option>Sort: Most Votes</option>
+                                <option>Sort: Trending</option>
+                                <option>Sort: Coherence</option>
+                                <option>Sort: Recent</option>
+                              </select>
+                            </div>
+
+                            {/* Proposal Cards */}
+                            <div className="space-y-4">
+                          
+                          {/* Example Proposal 1 */}
+                          <div className="bg-card border border-border rounded-lg overflow-hidden hover:bg-muted/30 transition-colors">
+                            <div className="p-6">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="flex-1">
+                                  <h3 className="text-lg font-semibold text-foreground mb-2">Lunar Cycle Dream Tracker</h3>
+                                  <p className="text-sm text-muted-foreground">Track dreams aligned with moon phases and automatically detect pattern correlations</p>
+                                </div>
+                                <div className="ml-4 px-3 py-1 bg-blue-500/20 border border-blue-500/30 text-blue-400 rounded-full text-xs font-semibold flex items-center gap-1">
+                                  <Eye size={12} />
+                                  PREVIEW
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-4 text-sm mb-4">
+                                <div className="flex items-center gap-2">
+                                  <ThumbsUp size={16} className="text-cyan-400" />
+                                  <span className="text-foreground font-medium">15</span>
+                                  <span className="text-muted-foreground">votes</span>
+                                </div>
+                                <div className="h-4 w-px bg-border" />
+                                <div className="flex items-center gap-2">
+                                  <TrendingUp size={16} className="text-green-400" />
+                                  <span className="text-green-400 font-medium">+3</span>
+                                  <span className="text-muted-foreground">today</span>
+                                </div>
+                                <div className="h-4 w-px bg-border" />
+                                <div className="flex items-center gap-2">
+                                  <Sparkles size={16} className="text-purple-400" />
+                                  <span className="text-foreground font-medium">89%</span>
+                                  <span className="text-muted-foreground">coherence</span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 mb-4">
+                                <span className="text-xs text-muted-foreground">Fields:</span>
+                                <span className="px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs">soul</span>
+                                <span className="px-2 py-1 bg-pink-500/20 text-pink-400 rounded text-xs">spirit</span>
+                              </div>
+
+                              <div className="mb-4">
+                                <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                                  <span>15 weighted votes</span>
+                                  <span>Next: Development (30 votes)</span>
+                                </div>
+                                <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                                  <div className="bg-gradient-to-r from-cyan-400 to-purple-400 h-2" style={{ width: '50%' }} />
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-3">
+                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 hover:from-cyan-500/30 hover:to-purple-500/30 border border-cyan-500/30 text-cyan-400 rounded font-medium transition-all text-sm" data-testid="button-vote-proposal-1">
+                                  <ThumbsUp size={16} />
+                                  Vote
+                                </button>
+                                <button className="px-4 py-2 bg-muted hover:bg-muted/50 rounded text-muted-foreground text-sm" data-testid="button-details-1">
+                                  Details
+                                </button>
+                                <button className="p-2 hover:bg-muted rounded transition-colors" data-testid="button-comment-1">
+                                  <MessageCircle size={16} className="text-muted-foreground" />
+                                </button>
+                                <button className="p-2 hover:bg-muted rounded transition-colors" data-testid="button-share-1">
+                                  <Share2 size={16} className="text-muted-foreground" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Example Proposal 2 */}
+                          <div className="bg-card border border-border rounded-lg overflow-hidden hover:bg-muted/30 transition-colors">
+                            <div className="p-6">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="flex-1">
+                                  <h3 className="text-lg font-semibold text-foreground mb-2">HRV Coherence Trainer</h3>
+                                  <p className="text-sm text-muted-foreground">Real-time heart rate variability training with field-specific protocols</p>
+                                </div>
+                                <div className="ml-4 px-3 py-1 bg-green-500/20 border border-green-500/30 text-green-400 rounded-full text-xs font-semibold flex items-center gap-1">
+                                  <Unlock size={12} />
+                                  PUBLIC
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-4 text-sm mb-4">
+                                <div className="flex items-center gap-2">
+                                  <ThumbsUp size={16} className="text-cyan-400" />
+                                  <span className="text-foreground font-medium">142</span>
+                                  <span className="text-muted-foreground">votes</span>
+                                </div>
+                                <div className="h-4 w-px bg-border" />
+                                <div className="flex items-center gap-2">
+                                  <TrendingUp size={16} className="text-green-400" />
+                                  <span className="text-green-400 font-medium">+12</span>
+                                  <span className="text-muted-foreground">today</span>
+                                </div>
+                                <div className="h-4 w-px bg-border" />
+                                <div className="flex items-center gap-2">
+                                  <Sparkles size={16} className="text-purple-400" />
+                                  <span className="text-foreground font-medium">92%</span>
+                                  <span className="text-muted-foreground">coherence</span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 mb-4">
+                                <span className="text-xs text-muted-foreground">Fields:</span>
+                                <span className="px-2 py-1 bg-pink-500/20 text-pink-400 rounded text-xs">heart</span>
+                                <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">body</span>
+                              </div>
+
+                              <div className="flex items-center gap-3">
+                                <button className="flex items-center gap-2 px-4 py-2 bg-muted text-muted-foreground rounded font-medium cursor-not-allowed text-sm" disabled data-testid="button-voted-2">
+                                  <ThumbsUp size={16} />
+                                  Voted
+                                </button>
+                                <button className="px-4 py-2 bg-muted hover:bg-muted/50 rounded text-muted-foreground text-sm" data-testid="button-details-2">
+                                  Details
+                                </button>
+                                <button className="px-4 py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 text-green-400 rounded font-medium text-sm" data-testid="button-install-2">
+                                  Install Module
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Example Proposal 3 - Concept */}
+                          <div className="bg-card border border-border rounded-lg overflow-hidden hover:bg-muted/30 transition-colors">
+                            <div className="p-6">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="flex-1">
+                                  <h3 className="text-lg font-semibold text-foreground mb-2">AI Dream Interpreter</h3>
+                                  <p className="text-sm text-muted-foreground">Upload dreams and get archetypal interpretations using consciousness fields</p>
+                                </div>
+                                <div className="ml-4 px-3 py-1 bg-gray-500/20 border border-gray-500/30 text-gray-400 rounded-full text-xs font-semibold flex items-center gap-1">
+                                  <Lock size={12} />
+                                  CONCEPT
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-4 text-sm mb-4">
+                                <div className="flex items-center gap-2">
+                                  <ThumbsUp size={16} className="text-cyan-400" />
+                                  <span className="text-foreground font-medium">7</span>
+                                  <span className="text-muted-foreground">votes</span>
+                                </div>
+                                <div className="h-4 w-px bg-border" />
+                                <div className="flex items-center gap-2">
+                                  <TrendingUp size={16} className="text-red-400" />
+                                  <span className="text-red-400 font-medium">-1</span>
+                                  <span className="text-muted-foreground">today</span>
+                                </div>
+                                <div className="h-4 w-px bg-border" />
+                                <div className="flex items-center gap-2">
+                                  <Sparkles size={16} className="text-purple-400" />
+                                  <span className="text-foreground font-medium">75%</span>
+                                  <span className="text-muted-foreground">coherence</span>
+                                </div>
+                              </div>
+
+                              <div className="mb-4">
+                                <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                                  <span>7 weighted votes</span>
+                                  <span>Next: Preview (10 votes)</span>
+                                </div>
+                                <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                                  <div className="bg-gradient-to-r from-cyan-400 to-purple-400 h-2" style={{ width: '70%' }} />
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-3">
+                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 hover:from-cyan-500/30 hover:to-purple-500/30 border border-cyan-500/30 text-cyan-400 rounded font-medium transition-all text-sm" data-testid="button-vote-proposal-3">
+                                  <ThumbsUp size={16} />
+                                  Vote
+                                </button>
+                                <button className="px-4 py-2 bg-muted hover:bg-muted/50 rounded text-muted-foreground text-sm" data-testid="button-details-3">
+                                  Details
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                            </div>
+                          </>
+                        )}
+
+                        {/* My Modules Tab */}
+                        {moduleActiveTab === 'my-modules' && (
+                          <ModuleCatalog />
+                        )}
+
+                        {/* Upload & Analyze Tab */}
+                        {moduleActiveTab === 'upload' && (
+                          <div className="max-w-4xl mx-auto">
+                            <div className="bg-card border border-border rounded-lg p-8">
+                              <div className="text-center mb-8">
+                                <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-500/20 rounded-full mb-4">
+                                  <Upload size={32} className="text-yellow-400" />
+                                </div>
+                                <h3 className="text-2xl font-semibold text-foreground mb-2">Upload & Analyze Module</h3>
+                                <p className="text-muted-foreground">
+                                  The Spot Agent will analyze your module structure, check resonance compatibility, and provide assembly feedback
+                                </p>
+                              </div>
+
+                              <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-yellow-400/50 transition-colors cursor-pointer">
+                                <input 
+                                  type="file" 
+                                  accept=".zip" 
+                                  className="hidden" 
+                                  id="module-upload"
+                                  onChange={handleModuleUpload}
+                                  disabled={uploadLoading}
+                                  data-testid="input-module-upload"
+                                />
+                                <label htmlFor="module-upload" className="cursor-pointer">
+                                  <div className="flex flex-col items-center gap-3">
+                                    {uploadLoading ? (
+                                      <>
+                                        <div className="animate-spin">
+                                          <Upload size={48} className="text-yellow-400" />
+                                        </div>
+                                        <p className="text-yellow-400 font-medium">Analyzing module...</p>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Upload size={48} className="text-muted-foreground" />
+                                        <div>
+                                          <p className="text-foreground font-medium mb-1">Drop module ZIP here or click to browse</p>
+                                          <p className="text-sm text-muted-foreground">Must include: manifest.json, resonance_map.json</p>
+                                        </div>
+                                      </>
+                                    )}
+                                  </div>
+                                </label>
+                              </div>
+
+                              {uploadError && (
+                                <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                                  <p className="text-red-400 text-sm">{uploadError}</p>
+                                </div>
+                              )}
+
+                              {uploadedModule && (
+                                <div className="mt-6 space-y-4">
+                                  <div className={`p-6 rounded-lg border-2 ${
+                                    uploadedModule.status === 'compatible' ? 'bg-green-500/10 border-green-500/30' :
+                                    uploadedModule.status === 'partial' ? 'bg-yellow-500/10 border-yellow-500/30' :
+                                    uploadedModule.status === 'requires_update' ? 'bg-orange-500/10 border-orange-500/30' :
+                                    'bg-red-500/10 border-red-500/30'
+                                  }`}>
+                                    <div className="flex items-start justify-between mb-4">
+                                      <div>
+                                        <h4 className="text-xl font-semibold text-foreground mb-1">{uploadedModule.moduleName}</h4>
+                                        <p className="text-sm text-muted-foreground">ID: {uploadedModule.moduleId}</p>
+                                      </div>
+                                      <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                        uploadedModule.status === 'compatible' ? 'bg-green-500/20 text-green-400' :
+                                        uploadedModule.status === 'partial' ? 'bg-yellow-500/20 text-yellow-400' :
+                                        uploadedModule.status === 'requires_update' ? 'bg-orange-500/20 text-orange-400' :
+                                        'bg-red-500/20 text-red-400'
+                                      }`}>
+                                        {uploadedModule.status.toUpperCase()}
+                                      </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-4 mb-4">
+                                      <div className="text-center">
+                                        <div className="text-2xl font-bold text-foreground">{(uploadedModule.compatibilityScore * 100).toFixed(0)}%</div>
+                                        <div className="text-xs text-muted-foreground">Compatibility</div>
+                                      </div>
+                                      <div className="text-center">
+                                        <div className="text-2xl font-bold text-foreground">{(uploadedModule.resonanceMatch * 100).toFixed(0)}%</div>
+                                        <div className="text-xs text-muted-foreground">Resonance Match</div>
+                                      </div>
+                                      <div className="text-center">
+                                        <div className="text-2xl font-bold text-foreground">{uploadedModule.activatedGates.length}</div>
+                                        <div className="text-xs text-muted-foreground">Gates Activated</div>
+                                      </div>
+                                    </div>
+
+                                    <p className="text-foreground mb-4">{uploadedModule.feedback}</p>
+
+                                    {uploadedModule.warnings && uploadedModule.warnings.length > 0 && (
+                                      <div className="mb-4">
+                                        <h5 className="text-sm font-semibold text-yellow-400 mb-2">⚠️ Warnings:</h5>
+                                        <ul className="list-disc list-inside space-y-1">
+                                          {uploadedModule.warnings.map((warning: string, i: number) => (
+                                            <li key={i} className="text-sm text-muted-foreground">{warning}</li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+
+                                    {uploadedModule.suggestions && uploadedModule.suggestions.length > 0 && (
+                                      <div>
+                                        <h5 className="text-sm font-semibold text-cyan-400 mb-2">💡 Suggestions:</h5>
+                                        <ul className="list-disc list-inside space-y-1">
+                                          {uploadedModule.suggestions.map((suggestion: string, i: number) => (
+                                            <li key={i} className="text-sm text-muted-foreground">{suggestion}</li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              <div className="mt-6 p-4 bg-muted/30 rounded-lg">
+                                <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                                  <Sparkles size={16} className="text-yellow-400" />
+                                  Expected Module Structure
+                                </h4>
+                                <div className="text-sm text-muted-foreground space-y-1 font-mono">
+                                  <div>├── meta/</div>
+                                  <div>│   └── manifest.json</div>
+                                  <div>├── config/</div>
+                                  <div>│   └── resonance_map.json</div>
+                                  <div>├── ui/</div>
+                                  <div>│   └── *.jsx</div>
+                                  <div>└── logic/</div>
+                                  <div>    └── *.js</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {devActiveTab === 'terminal' && (
+                  <BashTerminal />
+                )}
+
+                {devActiveTab === 'chat' && (
+                  <AIChat />
+                )}
+
+                {devActiveTab === 'llm-trainer' && (
+                  <LLMTrainer />
+                )}
+
+                {devActiveTab === 'gan-trainer' && (
+                  <GANTrainer />
+                )}
+
+                {devActiveTab === 'resonance' && (
+                  <div className="flex-1 p-6 overflow-y-auto bg-background">
+                    <div className="max-w-4xl mx-auto space-y-6">
+                      <div>
+                        <h2 className="text-xl font-semibold text-foreground mb-2 flex items-center gap-2">
+                          <Users size={24} className="text-pink-400" />
+                          Resonance Network
+                        </h2>
+                        <p className="text-sm text-muted-foreground">Connect with consciousness-aligned agents through Trinity assessment</p>
+                      </div>
+
+                      {/* Trinity Assessment Section */}
+                      <div className="bg-card border border-border rounded-lg p-6 space-y-6">
+                        <div>
+                          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                            <Heart className="w-5 h-5 text-pink-400" />
+                            Trinity Assessment
+                          </h3>
+                          <p className="text-sm text-muted-foreground mb-6">Rate your Mind, Body, and Heart energies to find resonant matches</p>
+                        </div>
+
+                        <div className="space-y-6">
+                          {/* Mind Energy */}
+                          <div>
+                            <div className="flex justify-between items-center mb-3">
+                              <label className="text-foreground font-medium">Mental Clarity & Focus</label>
+                              <span className="text-sm text-muted-foreground">Mind</span>
+                            </div>
+                            <input type="range" min="1" max="10" defaultValue="5" className="w-full accent-primary" />
+                          </div>
+
+                          {/* Body Energy */}
+                          <div>
+                            <div className="flex justify-between items-center mb-3">
+                              <label className="text-foreground font-medium">Physical Energy & Vitality</label>
+                              <span className="text-sm text-muted-foreground">Body</span>
+                            </div>
+                            <input type="range" min="1" max="10" defaultValue="5" className="w-full accent-primary" />
+                          </div>
+
+                          {/* Heart Energy */}
+                          <div>
+                            <div className="flex justify-between items-center mb-3">
+                              <label className="text-foreground font-medium">Emotional Depth & Compassion</label>
+                              <span className="text-sm text-muted-foreground">Heart</span>
+                            </div>
+                            <input type="range" min="1" max="10" defaultValue="5" className="w-full accent-primary" />
+                          </div>
+
+                          {/* Dream/Purpose */}
+                          <div>
+                            <label className="block text-foreground font-medium mb-3">Your Dream or Purpose</label>
+                            <textarea 
+                              placeholder="What is your highest aspiration?"
+                              rows={3}
+                              className="w-full px-4 py-2 bg-muted border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                              data-testid="textarea-resonance-dream"
+                            />
+                          </div>
+
+                          <button 
+                            className="w-full px-4 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-md transition-colors flex items-center justify-center gap-2"
+                            data-testid="button-find-matches"
+                          >
+                            <Sparkles size={18} />
+                            Find Resonance Matches
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Matches Grid */}
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                          <Users size={20} className="text-primary" />
+                          Your Matches
+                        </h3>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {[
+                            { name: 'Aria Chen', role: 'Harmonizer', compat: 87, skills: ['Meditation', 'Coaching'], dream: 'Build healing communities' },
+                            { name: 'Jordan Smith', role: 'Generator', compat: 79, skills: ['Teaching', 'Movement'], dream: 'Inspire conscious creators' },
+                          ].map((match, i) => (
+                            <div key={i} className="bg-card border border-border rounded-lg p-6 hover-elevate">
+                              <div className="flex justify-between items-start mb-4">
+                                <div>
+                                  <h4 className="text-lg font-semibold text-foreground">{match.name}</h4>
+                                  <p className="text-sm text-primary">{match.role}</p>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-2xl font-bold text-primary">{match.compat}%</div>
+                                  <div className="text-xs text-muted-foreground">Compatible</div>
+                                </div>
+                              </div>
+
+                              <div className="mb-4">
+                                <div className="text-xs text-muted-foreground mb-2">Skills</div>
+                                <div className="flex flex-wrap gap-2">
+                                  {match.skills.map((skill, j) => (
+                                    <span key={j} className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">
+                                      {skill}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div className="mb-4">
+                                <div className="text-xs text-muted-foreground mb-1">Dream</div>
+                                <p className="text-sm text-foreground">{match.dream}</p>
+                              </div>
+
+                              <button 
+                                className="w-full px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-md transition-colors"
+                                data-testid={`button-connect-${i}`}
+                              >
+                                Connect
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {devActiveTab === 'workspaces' && (
+                  <div className="flex-1 p-6 overflow-y-auto bg-background">
+                    <div className="max-w-6xl mx-auto space-y-6">
+                      <div>
+                        <h2 className="text-xl font-semibold text-foreground mb-2">Workspaces</h2>
+                        <p className="text-sm text-muted-foreground">Manage your projects and development environments</p>
+                      </div>
+
+                      {/* Create New Workspace */}
+                      <div className="bg-card border border-border rounded-lg p-4">
+                        <h3 className="text-sm font-semibold text-foreground mb-3">Create New Workspace</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs text-muted-foreground mb-1">Workspace Name</label>
+                            <input 
+                              type="text" 
+                              value={newWorkspaceName}
+                              onChange={(e) => setNewWorkspaceName(e.target.value)}
+                              placeholder="My New Project" 
+                              className="w-full px-3 py-2 bg-muted border border-border rounded text-foreground text-sm" 
+                              data-testid="input-workspace-name" 
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-muted-foreground mb-1">Project Type</label>
+                            <select 
+                              value={newWorkspaceType}
+                              onChange={(e) => setNewWorkspaceType(e.target.value)}
+                              className="w-full px-3 py-2 bg-muted border border-border rounded text-foreground text-sm" 
+                              data-testid="select-workspace-type"
+                            >
+                              <option>website</option>
+                              <option>game</option>
+                              <option>app</option>
+                              <option>api</option>
+                              <option>ai-project</option>
+                            </select>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={handleCreateWorkspace}
+                          className="mt-4 px-4 py-2 bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/30 text-teal-400 rounded text-sm font-medium" 
+                          data-testid="button-create-workspace"
+                        >
+                          Create Workspace
+                        </button>
+                      </div>
+
+                      {/* Current Workspaces */}
+                      <div>
+                        <h3 className="text-lg font-semibold text-foreground mb-3">Your Workspaces</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {workspaces.map((workspace) => (
+                            <div 
+                              key={workspace.id}
+                              className={`bg-card border rounded-lg p-4 hover:bg-muted/50 transition-colors ${
+                                currentWorkspace === workspace.id ? `border-${workspace.color}-500` : 'border-border'
+                              }`}
+                              data-testid={`workspace-card-${workspace.id}`}
+                            >
+                              <div className="flex items-start justify-between mb-3">
+                                <div className={`w-10 h-10 rounded-lg bg-${workspace.color}-500/20 flex items-center justify-center`}>
+                                  <Folder className={`text-${workspace.color}-400`} size={20} />
+                                </div>
+                                {currentWorkspace === workspace.id && (
+                                  <span className={`px-2 py-0.5 text-[10px] rounded bg-${workspace.color}-500/20 text-${workspace.color}-400 font-medium`}>ACTIVE</span>
+                                )}
+                              </div>
+                              <h4 className="text-sm font-semibold text-foreground mb-1">{workspace.name}</h4>
+                              <p className="text-xs text-muted-foreground mb-3 capitalize">{workspace.type}</p>
+                              <div className="text-[10px] text-muted-foreground mb-3">Last modified: {workspace.lastModified}</div>
+                              <div className="flex gap-2">
+                                <button 
+                                  onClick={() => handleSwitchWorkspace(workspace.id)}
+                                  disabled={currentWorkspace === workspace.id}
+                                  className={`flex-1 px-3 py-1.5 bg-${workspace.color}-500/20 hover:bg-${workspace.color}-500/30 border border-${workspace.color}-500/30 text-${workspace.color}-400 rounded text-xs font-medium disabled:opacity-50`}
+                                  data-testid={`button-switch-workspace-${workspace.id}`}
+                                >
+                                  {currentWorkspace === workspace.id ? 'Current' : 'Switch'}
+                                </button>
+                                <button 
+                                  onClick={() => handleDeleteWorkspace(workspace.id)}
+                                  className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 rounded text-xs font-medium"
+                                  data-testid={`button-delete-workspace-${workspace.id}`}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      
+      <SettingsModal />
+    </div>
+  );
+}

@@ -1,0 +1,31 @@
+
+> world.synthia.acode@1.0.0 build:web
+> rspack build --mode production
+
+WARNING in ⚠ asset size limit: The following asset(s) exceed the recommended size limit (300.000 KiB). This can impact web performance.
+  │ Assets:
+  │   main.js (3.085 MiB)
+  │   8598.chunk.js (684.167 KiB)
+  │   1647.chunk.js (420.007 KiB)
+  │   7271.chunk.js (714.683 KiB)
+  │   cssLspWorker.js (1009.752 KiB)
+  │   console.js (392.227 KiB)
+  │   5675.chunk.js (2.204 MiB)
+  │   welcome.chunk.js (4.197 MiB)
+  │   MesloLGSNFRegular.ttf (1.220 MiB)
+  │   htmlLspWorker.js (1.511 MiB)
+  │   typescriptLspWorker.js (6.410 MiB)
+
+WARNING in ⚠ entrypoint size limit: The following entrypoint(s) combined asset size exceeds the recommended limit (500.000 KiB). This can impact web performance.
+  │ Entrypoints:
+  │   main (3.323 MiB)
+  │       main.js
+  │       main.css
+  │   htmlLspWorker (1.511 MiB)
+  │       htmlLspWorker.js
+  │   cssLspWorker (1009.752 KiB)
+  │       cssLspWorker.js
+  │   typescriptLspWorker (6.410 MiB)
+  │       typescriptLspWorker.js
+
+Rspack compiled with 2 warnings in 12.79 s

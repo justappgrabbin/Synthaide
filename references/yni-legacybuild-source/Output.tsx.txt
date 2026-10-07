@@ -1,0 +1,98 @@
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { CodeViewer } from "@/components/CodeViewer";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import type { Project, GeneratedCode, CodeGap } from "@shared/schema";
+
+export default function Output() {
+  const { toast } = useToast();
+
+  const { data: projects = [] } = useQuery<Project[]>({
+    queryKey: ['/api/projects'],
+  });
+
+  const currentProject = projects[0];
+
+  const { data: generatedFiles = [] } = useQuery<GeneratedCode[]>({
+    queryKey: ['/api/projects', currentProject?.id, 'generated-code'],
+    enabled: !!currentProject?.id,
+  });
+
+  const { data: codeGapsData } = useQuery<{ gaps: CodeGap[] }>({
+    queryKey: ['/api/projects', currentProject?.id, 'code-gaps'],
+    enabled: !!currentProject?.id,
+  });
+
+  const downloadMutation = useMutation({
+    mutationFn: async (projectId: string) => {
+      const response = await apiRequest('POST', `/api/projects/${projectId}/download`, {});
+      return response;
+    },
+    onSuccess: (data) => {
+      const link = document.createElement('a');
+      link.href = data.downloadUrl;
+      link.download = `${currentProject?.name || 'project'}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Download started",
+        description: "Your generated application is being downloaded",
+      });
+    },
+  });
+
+  const fillGapsMutation = useMutation({
+    mutationFn: async (projectId: string) => {
+      return await apiRequest('POST', `/api/projects/${projectId}/fill-gaps`, {});
+    },
+    onSuccess: () => {
+      toast({
+        title: "Filling code gaps",
+        description: "AI is completing your code",
+      });
+      window.location.reload();
+    },
+  });
+
+  const handleDownload = () => {
+    if (currentProject?.id) {
+      downloadMutation.mutate(currentProject.id);
+    }
+  };
+
+  const handleFillGaps = (projectId: string) => {
+    fillGapsMutation.mutate(projectId);
+  };
+
+  if (!currentProject) {
+    return (
+      <div className="p-8 max-w-7xl mx-auto">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold mb-2">No Project Found</h2>
+          <p className="text-muted-foreground">Create and process a project to view output</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-8 max-w-7xl mx-auto space-y-8">
+      <div>
+        <h1 className="text-4xl font-bold mb-2">Generated Application</h1>
+        <p className="text-muted-foreground">
+          Review and download your optimized application code
+        </p>
+      </div>
+
+      <CodeViewer
+        generatedFiles={generatedFiles}
+        codeGaps={codeGapsData?.gaps || []}
+        onDownload={handleDownload}
+        onFillGaps={handleFillGaps}
+        projectId={currentProject.id}
+      />
+    </div>
+  );
+}

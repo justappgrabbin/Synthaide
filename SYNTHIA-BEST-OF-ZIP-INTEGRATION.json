@@ -1,0 +1,348 @@
+{
+  "base": "Synthia-OS-Acode-Morph-v0.9.1-FIVE-SUBSTRATE-GLCTB-KLEIN-VERIFIED.zip",
+  "rules": [
+    "No existing Synthia feature removed.",
+    "No Home or Settings UI removed or de-emphasized.",
+    "No astrology/bodygraph/state-space formula changed.",
+    "No Morph, Living Mesh, Tool Factory, Transition Resolver, DEG, Geo-DEG, or host runtime replaced.",
+    "No nested archive copied into the app.",
+    "Only additive conversation API code activated.",
+    "Selected source material preserved byte-for-byte for later Synthia/Morph inspection."
+  ],
+  "considered": [
+    {
+      "zip": "AI Assistant for Coding, Business, and Project Management (1).zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "Building a Self-Integrating AI Neural Matrix in HTML (7).zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "Building an AI Inference Engine for Goal-Oriented Tasks.zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "Building an Autonomous AI Site Orchestrator.zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "Cynthia-Talk-v1.zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "Cynthia_Full_Unified_Progression.zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "SYNTHIA_COMPLETE_WITH_MCPS_WORLD.zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "Self-Discovery (1).zip",
+      "action": "selected-source-integrated",
+      "reason": "Self-Discovery progression/Datababy/Gene Gnome core selected with exact provenance."
+    },
+    {
+      "zip": "SynthAIPrime-AS-YOU-N-I-VERSE-main.zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "SynthAi.CompleteSuite(1).zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "SynthAi.CompleteSuite(3).zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "SynthAi.FullWithYiJingGeneKeys(1).zip",
+      "action": "left-untouched",
+      "reason": "Astrology/reference work intentionally not expanded."
+    },
+    {
+      "zip": "SynthAi.FullWithYiJingGeneKeys(2).zip",
+      "action": "left-untouched",
+      "reason": "Astrology/reference work intentionally not expanded."
+    },
+    {
+      "zip": "SynthAi.FullWithYiJingGeneKeys-1(1).zip",
+      "action": "left-untouched",
+      "reason": "Astrology/reference work intentionally not expanded."
+    },
+    {
+      "zip": "SynthAi.HumanDesign (1)(1).zip",
+      "action": "left-untouched",
+      "reason": "Astrology/reference work intentionally not expanded."
+    },
+    {
+      "zip": "SynthAi.HumanDesign (1).zip",
+      "action": "left-untouched",
+      "reason": "Astrology/reference work intentionally not expanded."
+    },
+    {
+      "zip": "SynthAiSuite_skeleton(1).zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "SynthAi_Complete-FIXED(4).zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "Synthia-Five-Substrate-Grammar-Kernel.zip",
+      "action": "already-present",
+      "reason": "Already integrated in verified base."
+    },
+    {
+      "zip": "Synthia-OS-Acode-Morph-v0.9.1-APP-CONVERSATION-ASTROLOGY-DEFERRED.zip",
+      "action": "cherry-picked",
+      "reason": "Only additive SynthiaRuntime.talk() taken; deferred UI changes not taken."
+    },
+    {
+      "zip": "Synthia-OS-Acode-Morph-v0.9.1-FIVE-SUBSTRATE-ADDRESS-BRIDGE.zip",
+      "action": "superseded-or-derivative",
+      "reason": "Not used as base to avoid regression or unrequested UI changes."
+    },
+    {
+      "zip": "Synthia-OS-Acode-Morph-v0.9.1-FIVE-SUBSTRATE-GLCTB-KLEIN-VERIFIED.zip",
+      "action": "base",
+      "reason": "Verified pre-removal build; preserves current features."
+    },
+    {
+      "zip": "Synthia-OS-Acode-Morph-v0.9.1-RESONANCE-EXPRESSION-VERIFIED-APP-ONLY.zip",
+      "action": "superseded-or-derivative",
+      "reason": "Not used as base to avoid regression or unrequested UI changes."
+    },
+    {
+      "zip": "SynthiaIntegratedSystem-UNIFIED-COMPLETE.zip",
+      "action": "already-present",
+      "reason": "ATO Core compared; verified build already contains those implementations."
+    },
+    {
+      "zip": "YOU-N-I-VERSE-Complete(1).zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "YOU-N-I-VERSE-Complete(4).zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "You-N-I-Verse (1).zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "You-N-I-Verse(2)(1).zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "You-n-i-verse-browser (1).zip",
+      "action": "selected-source-integrated",
+      "reason": "Reality/browser and LegacyBuild source selected with exact provenance."
+    },
+    {
+      "zip": "biverse-guide-synthia-mesh-complete-20260725(1).zip",
+      "action": "left-untouched",
+      "reason": "Astrology/reference work intentionally not expanded."
+    },
+    {
+      "zip": "biverse-guide-synthia-mesh-complete-20260725(2).zip",
+      "action": "left-untouched",
+      "reason": "Astrology/reference work intentionally not expanded."
+    },
+    {
+      "zip": "biverse-guide-synthia-mesh-learning-corrected(1).zip",
+      "action": "left-untouched",
+      "reason": "Astrology/reference work intentionally not expanded."
+    },
+    {
+      "zip": "codon and body(3).zip",
+      "action": "left-untouched",
+      "reason": "Astrology/reference work intentionally not expanded."
+    },
+    {
+      "zip": "cross-field-isomorphism_patched.zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "cynthia.zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "cynthia_starter_kit.zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    },
+    {
+      "zip": "you-n-i-verse.zip",
+      "action": "reviewed-not-merged",
+      "reason": "Older/prototype/host-incompatible or duplicates stronger live Synthia systems."
+    }
+  ],
+  "integratedSources": [
+    {
+      "sourceZip": "You-n-i-verse-browser (1).zip",
+      "sourcePath": "You-n-i-verse-browser/client/src/components/YouUniverseBrowser.tsx",
+      "integratedPath": "references/yni-reality-source/YouUniverseBrowser.tsx.txt",
+      "sha256": "b1c2ca047463a2055faa267df6b99fbb3402f1687178467d4a312b0c1fc50193",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "You-n-i-verse-browser (1).zip",
+      "sourcePath": "You-n-i-verse-browser/client/src/lib/residentSquare.ts",
+      "integratedPath": "references/yni-reality-source/residentSquare.ts.txt",
+      "sha256": "67a4f5af408aece06622e68d69cd436762cf71427d980432274beff75d24d6a8",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "You-n-i-verse-browser (1).zip",
+      "sourcePath": "You-n-i-verse-browser/client/src/lib/consciousnessOrchestrator.ts",
+      "integratedPath": "references/yni-reality-source/consciousnessOrchestrator.ts.txt",
+      "sha256": "9915dc1a8a339d4211cb89f0c51cff6a70105a298cf5be13070adbd1d098fefb",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "You-n-i-verse-browser (1).zip",
+      "sourcePath": "You-n-i-verse-browser/shared/schema.ts",
+      "integratedPath": "references/yni-reality-source/schema.ts.txt",
+      "sha256": "4446718f789a06c99b5caf2a32a91824dfb5f9d56a4b63ef9751b4757ffe037f",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "You-n-i-verse-browser (1).zip",
+      "sourcePath": "You-n-i-verse-browser/server/synthAssembler.ts",
+      "integratedPath": "references/yni-reality-source/synthAssembler.ts.txt",
+      "sha256": "c1e7cfdda568fc7cf07283ae3f936620efcfcad933d28874027a301392bae061",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "You-n-i-verse-browser (1).zip",
+      "sourcePath": "You-n-i-verse-browser/server/services/browserAgent.ts",
+      "integratedPath": "references/yni-reality-source/browserAgent.ts.txt",
+      "sha256": "b171d5a22e250f0a3a0d3adcc8df1412cb80837606d6582ef8a33199d16e463c",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "You-n-i-verse-browser (1).zip",
+      "sourcePath": "You-n-i-verse-browser/server/ingestModules.ts",
+      "integratedPath": "references/yni-reality-source/ingestModules.ts.txt",
+      "sha256": "d7c006de1e015b66fa6d22b9b3f52c07aafde2bac7a6de9a4821a68e24adc506",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "You-n-i-verse-browser (1).zip",
+      "sourcePath": "You-n-i-verse-browser/public/modules/LegacyBuild_1762708603116.zip::LegacyBuild/shared/schema.ts",
+      "integratedPath": "references/yni-legacybuild-source/schema.ts.txt",
+      "sha256": "e50cbf8c43b531b7ff48b0d62932980c64390064f1823b4f333048515a1bc0f7",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "You-n-i-verse-browser (1).zip",
+      "sourcePath": "You-n-i-verse-browser/public/modules/LegacyBuild_1762708603116.zip::LegacyBuild/client/src/pages/Upload.tsx",
+      "integratedPath": "references/yni-legacybuild-source/Upload.tsx.txt",
+      "sha256": "289109d6c880dbe40fde183d63aea23e5b5b4047f9d080c163695eea9599f405",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "You-n-i-verse-browser (1).zip",
+      "sourcePath": "You-n-i-verse-browser/public/modules/LegacyBuild_1762708603116.zip::LegacyBuild/client/src/pages/Process.tsx",
+      "integratedPath": "references/yni-legacybuild-source/Process.tsx.txt",
+      "sha256": "64133fd840dcdfa60df9b2eabb8b42e6fffd6d9f410807732f0a6f75db8a430c",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "You-n-i-verse-browser (1).zip",
+      "sourcePath": "You-n-i-verse-browser/public/modules/LegacyBuild_1762708603116.zip::LegacyBuild/client/src/pages/PlanReview.tsx",
+      "integratedPath": "references/yni-legacybuild-source/PlanReview.tsx.txt",
+      "sha256": "9c7d13a023bb6e8380a13d94c45764c96d3d22a90922ba200a6b2ec55d6e70e0",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "You-n-i-verse-browser (1).zip",
+      "sourcePath": "You-n-i-verse-browser/public/modules/LegacyBuild_1762708603116.zip::LegacyBuild/client/src/pages/WriteCode.tsx",
+      "integratedPath": "references/yni-legacybuild-source/WriteCode.tsx.txt",
+      "sha256": "b33082f48cfb7a1cf661495689f5972abffa471f052806c8f1f99093e929857d",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "You-n-i-verse-browser (1).zip",
+      "sourcePath": "You-n-i-verse-browser/public/modules/LegacyBuild_1762708603116.zip::LegacyBuild/client/src/pages/Output.tsx",
+      "integratedPath": "references/yni-legacybuild-source/Output.tsx.txt",
+      "sha256": "766b8e1970fb3b72463be6c502aff73570725fdd3d8ebab7d725e843c3052006",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "You-n-i-verse-browser (1).zip",
+      "sourcePath": "You-n-i-verse-browser/public/modules/LegacyBuild_1762708603116.zip::LegacyBuild/server/routes.ts",
+      "integratedPath": "references/yni-legacybuild-source/routes.ts.txt",
+      "sha256": "e471c6cdd6b755348a4e2773312de10339c05016c20481113ae78fafe2185711",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "You-n-i-verse-browser (1).zip",
+      "sourcePath": "You-n-i-verse-browser/public/modules/LegacyBuild_1762708603116.zip::LegacyBuild/server/storage.ts",
+      "integratedPath": "references/yni-legacybuild-source/storage.ts.txt",
+      "sha256": "7280dc7b7b1d140e6d22b941a74e20a43eaf4e623f13a794dcd0ea45c05dc7b5",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "Self-Discovery (1).zip",
+      "sourcePath": "Self-Discovery/client/src/lib/gameContext.tsx",
+      "integratedPath": "references/self-discovery-source/gameContext.tsx.txt",
+      "sha256": "0202f03511db5f7582a076bd2d148eb40f7f53198a97bfe0d4d4f2fe676934b8",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "Self-Discovery (1).zip",
+      "sourcePath": "Self-Discovery/shared/schema.ts",
+      "integratedPath": "references/self-discovery-source/schema.ts.txt",
+      "sha256": "f11991195e7b8b92557a2da924c406a5d1a727deb0e4913bd005afa58e6404f0",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "Self-Discovery (1).zip",
+      "sourcePath": "Self-Discovery/client/src/components/game/DatababyCollection.tsx",
+      "integratedPath": "references/self-discovery-source/DatababyCollection.tsx.txt",
+      "sha256": "c93c8a46ba3854dfe7589ff8282f07fee1ff5f6b7079b5833e321c4457bab076",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "Self-Discovery (1).zip",
+      "sourcePath": "Self-Discovery/client/src/components/game/GeneGnomeCard.tsx",
+      "integratedPath": "references/self-discovery-source/GeneGnomeCard.tsx.txt",
+      "sha256": "44c3cdf710f6bac1fe63b74a2e1f9697c8c61d6509e48660c90e623be5b48eb2",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "Self-Discovery (1).zip",
+      "sourcePath": "Self-Discovery/client/src/components/game/ProgressionDisplay.tsx",
+      "integratedPath": "references/self-discovery-source/ProgressionDisplay.tsx.txt",
+      "sha256": "1c7417b4ad5f77dfc16a62c0d127a68b3ae40dc701ee2a814885ed5e08540fe2",
+      "status": "exact-source-preserved"
+    },
+    {
+      "sourceZip": "Self-Discovery (1).zip",
+      "sourcePath": "Self-Discovery/client/src/components/terminal/Terminal.tsx",
+      "integratedPath": "references/self-discovery-source/Terminal.tsx.txt",
+      "sha256": "5dbb9dbd336a378bee0b83f6eabe01c620ae00769bd4a242d30d352a47e0eda5",
+      "status": "exact-source-preserved"
+    }
+  ]
+}

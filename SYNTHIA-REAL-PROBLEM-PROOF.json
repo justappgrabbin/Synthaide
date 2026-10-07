@@ -1,0 +1,47 @@
+{
+  "build": "Synthia OS Acode Morph v0.9.1 + five-substrate + GLCTB/Klein transition bridge",
+  "trace": [
+    "canonical address",
+    "Gate/Line/Color/Tone/Base",
+    "StateSpaceKernel vector",
+    "I Ching changing-line relation",
+    "Klein eight-house operator",
+    "five-substrate projections",
+    "TransitionResolver",
+    "real capability action",
+    "OutcomeVerifier"
+  ],
+  "real_problem": {
+    "prompt": "Create an executable tool that inspects gate-address relationships.",
+    "resolved_address": {
+      "dimension": "Movement",
+      "gate": 11,
+      "line": 1,
+      "color": 1,
+      "tone": 1,
+      "base": 1
+    },
+    "gate_bits": "001010",
+    "klein_house": "House of The Arousing",
+    "changing_lines": [
+      2,
+      4
+    ],
+    "resolved_capability": "synthia-tool-synthesis-worker",
+    "created_tool": {
+      "id": "tool-6a6ddcb8de4ee954",
+      "name": "BigramMovementG1L4",
+      "addressKey": "Movement:G1.L4.C4.T4.B4"
+    },
+    "verification": "supported"
+  },
+  "tests": {
+    "klein_address": "PASS 1/1",
+    "address_substrate": "PASS 1/1",
+    "transition_resolver": "PASS 7/7",
+    "native_grammar": "PASS 9/9",
+    "complete_suite": "PASS",
+    "release_audit": "PASS",
+    "bundle_syntax": "PASS"
+  }
+}

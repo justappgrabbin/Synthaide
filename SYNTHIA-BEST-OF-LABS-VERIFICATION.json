@@ -1,0 +1,11 @@
+{
+  "build": "Synthia-OS-Acode-Morph-v0.9.3-BEST-OF-LIVING-ORGANISM",
+  "base": "Synthia-OS-Acode-Morph-v0.9.1-BEST-OF-ZIPS-ADDITIVE-VERIFIED.zip",
+  "base_sha256": "21b6f587ea46c98be3dabb8f7fdd122845a013a538283850b27eaf277ea9598a",
+  "archive_integrity": "passed",
+  "complete_existing_suite": "passed",
+  "new_lab_tests": { "passed": 5, "failed": 0 },
+  "new_organism_tests": { "passed": 5, "failed": 0 },
+  "modules": ["biorhythm", "chemistry-reaction-state-machine", "codon-ou-evolution", "human-design-provider-bridge", "source-license-registry", "bounded-organism-pulse", "approval-gate", "episodic-memory", "metabolism"],
+  "restricted_code_copied": false
+}
