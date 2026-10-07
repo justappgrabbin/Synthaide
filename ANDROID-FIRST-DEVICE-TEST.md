@@ -64,3 +64,17 @@ this review environment. JavaScript tests and bundle compilation cannot substitu
 for those checks. Historical documents mentioning `test:synthia-kimi-donor`,
 `test:synthia-everything`, or 1101 tests describe another checkpoint and do not apply
 to this archive.
+
+## GitHub Actions APK build
+
+The **Build Synthia Android APK** workflow installs the Android toolchain,
+verifies the source, restores Cordova/Acode native components, and builds a
+debug APK. It runs on pushes to `main` and can be started from the Actions tab
+with **Run workflow**. After a successful run, download the
+**Synthia-OS-debug-APK** artifact and extract `Synthia-OS-debug.apk`.
+The artifact also includes a SHA-256 checksum and Android package metadata.
+
+This debug build does not require a paid development environment or a private
+release signing key. It bundles the native Cordova runtime and the Acode editor;
+users do not need to install either separately. Production signing and actual
+device acceptance remain separate release tasks.
